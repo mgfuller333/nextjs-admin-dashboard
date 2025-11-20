@@ -4,14 +4,14 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    NEXTAUTH_URL: z.string().url().default("http://localhost:3000"),
-    NEXTAUTH_SECRET: z.string().min(32),
+    NEXTAUTH_URL:z.string().min(1),
+    NEXTAUTH_SECRET: z.string().min(1),
 
     DATABASE_URL: z.string().url(),
 
-    STRIPE_API_KEY: z.string().startsWith("sk_"),
-    STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
-    STRIPE_PRO_MONTHLY_PLAN_ID: z.string().startsWith("price_"),
+    STRIPE_API_KEY: z.string().min(1),
+    STRIPE_WEBHOOK_SECRET: z.string().min(1),
+    STRIPE_PRO_MONTHLY_PLAN_ID: z.string().min(1),
 
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
