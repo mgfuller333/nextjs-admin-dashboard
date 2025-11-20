@@ -111,7 +111,7 @@ export async function getWeeklyData(
   const params = new URLSearchParams();
   validatedKeys.forEach(key => params.append('keys', key));
 
-  const res = await fetch(`${process.env.API_BASE_URL || 'http://localhost:3000'}/api/weeklyData?${params.toString()}`);
+  const res = await fetch(`${process.env.API_BASE_URL}/api/weeklyData?${params.toString()}`);
   if (!res.ok) throw new Error(`API error: ${res.statusText}`);
   const payload = await res.json();
 
@@ -226,7 +226,7 @@ export async function getWeeksProfitData(
   if (end) params.set('end', end);
 
   // Fetch
-  const res = await fetch(`${process.env.API_BASE_URL || 'http://localhost:3000'}/api/data?${params.toString()}`);
+  const res = await fetch(`${process.env.API_BASE_URL}/api/data?${params.toString()}`);
   if (!res.ok) {
     console.error('API fetch failed:', res.statusText);
     return [];
