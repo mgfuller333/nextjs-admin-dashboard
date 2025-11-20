@@ -22,10 +22,11 @@ export const env = createEnv({
     GOOGLE_CLOUD_PROJECT_ID: z.string().min(1),
     GOOGLE_CLOUD_PRIVATE_KEY: z.string().min(1),
     GOOGLE_CLOUD_CLIENT_EMAIL: z.string().email(),
+    GOOGLE_MAPS_API_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url(),
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(1),
+    
   },
   /**
    * MANUAL DESTRUCTURING — This is the correct way in 2025
@@ -46,10 +47,10 @@ export const env = createEnv({
     GOOGLE_CLOUD_PROJECT_ID: process.env.GOOGLE_CLOUD_PROJECT_ID,
     GOOGLE_CLOUD_PRIVATE_KEY: process.env.GOOGLE_CLOUD_PRIVATE_KEY,
     GOOGLE_CLOUD_CLIENT_EMAIL: process.env.GOOGLE_CLOUD_CLIENT_EMAIL,
-
+GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
     // Client vars
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
