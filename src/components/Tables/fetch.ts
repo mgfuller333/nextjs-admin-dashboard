@@ -1,4 +1,8 @@
 import * as logos from "@/assets/logos";
+import { useSensorStore } from "@/services/store";
+import { formattedLastSeen, isOnlineStatus } from "@/app/(home)/fetch";
+import { dataNarrative } from "@/app/actions";
+
 
 export async function getTopProducts() {
   // Fake delay
@@ -72,50 +76,28 @@ export async function getInvoiceTableData() {
   ];
 }
 
-export async function getTopChannels() {
-  // Fake delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+
+export async function getTopChannels(dailyReadings: any) {
+  const data = dailyReadings
+
+  const text = await dataNarrative(dailyReadings);
+
+  const lastSeenTimestamp = data.co2_0.x;
+
+
+  console.log("Top Channels - lastSeenTimestamp:", lastSeenTimestamp);
+
+  const onlineStatus = lastSeenTimestamp ? isOnlineStatus(lastSeenTimestamp) : 'Offline';
+
+  const status = onlineStatus === 'Online' ? 'online' : 'offline';
 
   return [
     {
-      name: "Google",
-      visitors: 3456,
-      revenues: 4220,
-      sales: 3456,
-      conversion: 2.59,
-      logo: logos.google,
-    },
-    {
-      name: "X.com",
-      visitors: 3456,
-      revenues: 4220,
-      sales: 3456,
-      conversion: 2.59,
-      logo: logos.x,
-    },
-    {
-      name: "Github",
-      visitors: 3456,
-      revenues: 4220,
-      sales: 3456,
-      conversion: 2.59,
-      logo: logos.github,
-    },
-    {
-      name: "Vimeo",
-      visitors: 3456,
-      revenues: 4220,
-      sales: 3456,
-      conversion: 2.59,
-      logo: logos.vimeo,
-    },
-    {
-      name: "Facebook",
-      visitors: 3456,
-      revenues: 4220,
-      sales: 3456,
-      conversion: 2.59,
-      logo: logos.facebook,
-    },
+      name: "Omnius 1",
+      status,
+      summary:  text || "loading...",
+      location: "IT Department",
+    }
   ];
 }

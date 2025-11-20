@@ -7,11 +7,13 @@ import {
   XIcon,
 } from "./icons";
 
+import HubIcon from '@mui/icons-material/Hub';
+
 const ACCOUNTS = [
   {
     platform: "Facebook",
     url: "#",
-    Icon: FacebookIcon,
+    Icon: HubIcon,
   },
   {
     platform: "X",

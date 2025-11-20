@@ -1,51 +1,97 @@
-import { PeriodPicker } from "@/components/period-picker";
-import { standardFormat } from "@/lib/format-number";
+// components/Charts/payments-overview/index.tsx
+import { SensorTimeChart } from "./chart";
+import { SensorPicker } from "@/components/period-picker";
 import { cn } from "@/lib/utils";
-import { getPaymentsOverviewData } from "@/services/charts.services";
-import { PaymentsOverviewChart } from "./chart";
 
-type PropsType = {
+type Props = {
   timeFrame?: string;
   className?: string;
+  searchParams?: Record<string, string | string[] | undefined>;
+  // Accept partial data — some sensors may be missing
+  data: Partial<Record<string, { x: string; y: number }[]>>;
 };
 
-export async function PaymentsOverview({
+export default async function PaymentsOverview({
   timeFrame = "monthly",
   className,
-}: PropsType) {
-  const data = await getPaymentsOverviewData(timeFrame);
+  searchParams = {},
+  data: rawData,
+}: Props) {
+  // Normalize: ensure every sensor has an array (never undefined)
+  const sensorData = Object.fromEntries(
+    Object.entries(rawData).map(([key, values]) => [key, values ?? []])
+  ) as Record<string, { x: string; y: number }[]>;
+
+  // Optional: filter by URL ?sensors=... (fallback to defaults)
+  const selectedSensors = searchParams.sensors
+    ? Array.isArray(searchParams.sensors)
+      ? searchParams.sensors
+      : [searchParams.sensors]
+    : ['solP', 'batP']; // your actual keys
+
+  // Filter data to only selected sensors (optional — remove if you want all)
+  const filteredData = Object.fromEntries(
+    Object.entries(sensorData).filter(([key]) => selectedSensors.includes(key))
+  );
+
+  const finalData = Object.keys(filteredData).length > 0 ? filteredData : sensorData;
 
   return (
     <div
       className={cn(
-        "grid gap-2 rounded-[10px] bg-white px-7.5 pb-6 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
-        className,
+        "rounded-[10px] bg-white px-7.5 pb-6 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
+        className
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-body-2xlg font-bold text-dark dark:text-white">
-          Payments Overview
+          Infrastructure Overview
         </h2>
 
-        <PeriodPicker defaultValue={timeFrame} sectionKey="payments_overview" />
+        <SensorPicker
+          sectionKey="sensors"
+          defaultValue={['solP', 'batP']}
+        />
       </div>
 
-      <PaymentsOverviewChart data={data} />
+      {/* Chart */}
+      <div className="mt-6">
+        <SensorTimeChart data={finalData} />
+      </div>
 
-      <dl className="grid divide-stroke text-center dark:divide-dark-3 sm:grid-cols-2 sm:divide-x [&>div]:flex [&>div]:flex-col-reverse [&>div]:gap-1">
-        <div className="dark:border-dark-3 max-sm:mb-3 max-sm:border-b max-sm:pb-3">
-          <dt className="text-xl font-bold text-dark dark:text-white">
-            ${standardFormat(data.received.reduce((acc, { y }) => acc + y, 0))}
-          </dt>
-          <dd className="font-medium dark:text-dark-6">Received Amount</dd>
-        </div>
+      {/* Stats: highest value per sensor */}
+      <dl className="mt-6 flex flex-wrap justify-center gap-x-8 gap-y-6 overflow-x-auto pb-3 text-center">
+        {Object.entries(finalData).map(([key, values]) => {
+          if (values.length === 0) {
+            return (
+              <div key={key} className="flex flex-col items-center px-2">
+                <dt className="text-2xl font-bold text-muted-foreground">—</dt>
+                <dd className="text-xs text-muted-foreground mt-1">{key}</dd>
+              </div>
+            );
+          }
 
-        <div>
-          <dt className="text-xl font-bold text-dark dark:text-white">
-            ${standardFormat(data.due.reduce((acc, { y }) => acc + y, 0))}
-          </dt>
-          <dd className="font-medium dark:text-dark-6">Due Amount</dd>
-        </div>
+          const highest = values.reduce((max, point) =>
+            point.y > max.y ? point : max
+          );
+
+          const sensorCount = Object.keys(finalData).length;
+          const valueSize =
+            sensorCount <= 3 ? "text-2xl" :
+            sensorCount <= 5 ? "text-xl" :
+            sensorCount <= 7 ? "text-lg" : "text-base";
+
+          return (
+            <div key={key} className="flex flex-col items-center whitespace-nowrap px-2">
+              <dt className={`${valueSize} font-bold text-dark dark:text-white`}>
+                {highest.y.toFixed(1)}
+              </dt>
+              <dd className="text-xs text-muted-foreground mt-1 leading-none">
+                {key} • {highest.x}
+              </dd>
+            </div>
+          );
+        })}
       </dl>
     </div>
   );

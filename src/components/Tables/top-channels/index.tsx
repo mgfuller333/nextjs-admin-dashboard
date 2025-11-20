@@ -1,3 +1,5 @@
+
+
 import {
   Table,
   TableBody,
@@ -10,9 +12,27 @@ import { compactFormat, standardFormat } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getTopChannels } from "../fetch";
+import { DeviceLocationsMap } from "@/components/Maps/deviceLocations";
 
-export async function TopChannels({ className }: { className?: string }) {
-  const data = await getTopChannels();
+export async function TopChannels({ className, dailyReadings }: { className?: string, dailyReadings?: any }) {
+  
+  
+  const data = await getTopChannels(dailyReadings);
+
+  type Location = {
+  device: string;
+  lat: number;
+  lng: number;
+};
+
+  const testLocations: Location[] = [
+  {
+    device: "Omnius 1",
+    lat: 25.7215,
+    lng: -80.2684,
+  },
+ 
+];
 
   return (
     <div
@@ -22,47 +42,39 @@ export async function TopChannels({ className }: { className?: string }) {
       )}
     >
       <h2 className="mb-4 text-body-2xlg font-bold text-dark dark:text-white">
-        Top Channels
+        Alerts
       </h2>
-
+<DeviceLocationsMap locations={testLocations} />
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
             <TableHead className="min-w-[120px] !text-left">Source</TableHead>
-            <TableHead>Visitors</TableHead>
-            <TableHead className="!text-right">Revenues</TableHead>
-            <TableHead>Sales</TableHead>
-            <TableHead>Conversion</TableHead>
+          
+            <TableHead className="min-w-[120px] !text-left">Status</TableHead>
+            <TableHead className="min-w-[120px] !text-left">Summary</TableHead>
+            <TableHead className="min-w-[120px] !text-left">Location</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {data.map((channel, i) => (
             <TableRow
-              className="text-center text-base font-medium text-dark dark:text-white"
+              className="text-left text-base font-medium text-dark dark:text-white"
               key={channel.name + i}
             >
               <TableCell className="flex min-w-fit items-center gap-3">
-                <Image
-                  src={channel.logo}
-                  className="size-8 rounded-full object-cover"
-                  width={40}
-                  height={40}
-                  alt={channel.name + " Logo"}
-                  role="presentation"
-                />
+                
                 <div className="">{channel.name}</div>
               </TableCell>
+  <TableCell>{channel.status}</TableCell>
+              <TableCell>{channel.summary}</TableCell>
 
-              <TableCell>{compactFormat(channel.visitors)}</TableCell>
-
-              <TableCell className="!text-right text-green-light-1">
-                ${standardFormat(channel.revenues)}
+              <TableCell className="!text-left">
+                {(channel.location)}
               </TableCell>
 
-              <TableCell>{channel.sales}</TableCell>
-
-              <TableCell>{channel.conversion}%</TableCell>
+        
+         
             </TableRow>
           ))}
         </TableBody>

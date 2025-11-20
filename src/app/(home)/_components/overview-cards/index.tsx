@@ -1,46 +1,44 @@
+// app/_components/overview-cards/group.tsx
 import { compactFormat } from "@/lib/format-number";
 import { getOverviewData } from "../../fetch";
 import { OverviewCard } from "./card";
 import * as icons from "./icons";
 
-export async function OverviewCardsGroup() {
-  const { views, profit, products, users } = await getOverviewData();
+type KPIProps = {
+  weekly: Partial<Record<string, { x: string; y: number }[]>>;
+  latest: Partial<Record<string, { x: string; y: number }>>;
+};
+
+export async function OverviewCardsGroup({ weekly, latest }: KPIProps) {
+  // These now come directly from props
+  console.log("OverviewCardsGroup - weekly:", weekly);
+  console.log("OverviewCardsGroup - latest:", latest);
+
+  const { lastSeen, PowerUsage, co2, aqi } = await getOverviewData(weekly, latest);
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
       <OverviewCard
-        label="Total Views"
-        data={{
-          ...views,
-          value: compactFormat(views.value),
-        }}
+        label="Last Update"
+        data={{ ...lastSeen, value: lastSeen.value }}
         Icon={icons.Views}
       />
 
       <OverviewCard
-        label="Total Profit"
-        data={{
-          ...profit,
-          value: "$" + compactFormat(profit.value),
-        }}
+        label="Power Usage (kWh)"
+        data={{ ...PowerUsage, value: compactFormat(PowerUsage.value) }}
         Icon={icons.Profit}
       />
 
       <OverviewCard
-        label="Total Products"
-        data={{
-          ...products,
-          value: compactFormat(products.value),
-        }}
+        label="Air Quality Index"
+        data={{ ...aqi, value: compactFormat(aqi.value) }}
         Icon={icons.Product}
       />
 
       <OverviewCard
-        label="Total Users"
-        data={{
-          ...users,
-          value: compactFormat(users.value),
-        }}
+        label="CO2 Level (PPM)"
+        data={{ ...co2, value: compactFormat(co2.value) }}
         Icon={icons.Users}
       />
     </div>

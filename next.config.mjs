@@ -23,7 +23,15 @@ const nextConfig = {
         port: ""
       }
     ]
-  }
+  },
+
+  // Or use this newer flag (Next.js 14+)
+  logging: {
+    fetches: {
+      // Hides the 404 spam
+      level: "warn", // or "error"
+    },
+  },
 };
 
 export default nextConfig;
