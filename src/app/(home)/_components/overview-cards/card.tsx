@@ -17,7 +17,7 @@ export function OverviewCard({ label, data, Icon }: PropsType) {
   const isStringGrowth = typeof data.growthRate === 'string';
   // Enhanced check: Skip % if string and matches time pattern (e.g., "45s", "3m", "2h", "99d")
   // This covers "last seen/update" times without assuming all strings are status
-  const isTimeString = isStringGrowth && /^\d+[smhd]$/.test(data.growthRate);
+  const isTimeString = isStringGrowth && /^\d+[smhd]$/.test(String(data.growthRate));
   const isStatusMode = isStringGrowth && !isTimeString; // e.g., "Online" | "Offline"
 
   const isPositive = isStatusMode 

@@ -3,7 +3,6 @@
 import { createStreamableValue, createStreamableUI } from '@ai-sdk/rsc';
 import { generateObject, ModelMessage, streamText } from 'ai';
 import { xai, createXai } from '@ai-sdk/xai';
-import { Weather } from '@/components/weather';
 import { generateText } from 'ai';
 import { ReactNode } from 'react';
 import { z } from 'zod';
@@ -62,21 +61,7 @@ export async function continueConversation(history: Message[]) {
     model: xai_keyed('grok-4-fast-reasoning'),
     system: 'You are a friendly weather assistant!',
     messages: history,
-    tools: {
-      showWeather: {
-        description: 'Show the weather for a given location.',
-        parameters: z.object({
-          city: z.string().describe('The city to show the weather for.'),
-          unit: z
-            .enum(['F'])
-            .describe('The unit to display the temperature in'),
-        }),
-        execute: async ({ city, unit }) => {
-          stream.done(<Weather city={city} unit={unit} />);
-          return `Here's the weather for ${city}!`; 
-        },
-      },
-    },
+   
   });
 
   return {
@@ -85,7 +70,7 @@ export async function continueConversation(history: Message[]) {
       {
         role: 'assistant' as const,
         content:
-          text || toolResults.map(toolResult => toolResult.result).join(),
+          text || (toolResults ?? []).map(toolResult => String((toolResult as any).result ?? (toolResult as any).output ?? (toolResult as any).text ?? toolResult)).join(', '),
         display: stream.value,
       },
     ],

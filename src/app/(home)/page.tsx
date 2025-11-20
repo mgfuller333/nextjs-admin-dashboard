@@ -62,6 +62,8 @@ export default async function Home({ searchParams }: Props) {
           inputData={weeklyAverages}
         /> 
 
+      
+
           <div className="col-span-12 grid xl:col-span-8">
 
 <Suspense fallback={<TopChannelsSkeleton />}>
@@ -79,8 +81,9 @@ export default async function Home({ searchParams }: Props) {
             <ChatsCard  {...overviewData}/>
         </Suspense>
 
-        <ChatbotButton />
+        
       </div>
+        <ChatbotButton />
     </>
   );
 }

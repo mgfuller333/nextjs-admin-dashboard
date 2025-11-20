@@ -1,4 +1,4 @@
-// components/SensorDashboard.tsx ('use client'—TS-fixed partials + guards)
+// components/SensorDashboard.tsx
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -7,16 +7,15 @@ import { getOldSensorData, getWeeksProfitData } from '@/services/charts.services
 import type { SensorKey, SensorPoint } from '@/types/sensor';
 
 interface Props {
-  monthlyData?: Partial<Record<SensorKey, SensorPoint[]>>; // Partial: Matches sparse server data
-  weeklyRMS?: Partial<Record<SensorKey, number>>; // Partial for RMS map
-  keys?: SensorKey[]; // Guarded below
+  monthlyData?: Partial<Record<SensorKey, SensorPoint[]>>;
+  weeklyRMS?: Partial<Record<SensorKey, number>>;
+  keys?: SensorKey[];
 }
 
-// No defaultProps needed—use inline defaults + guards
 export function SensorDashboard({
-  monthlyData = {}, // Empty {} is fine for Partial (TS allows missing keys)
-  weeklyRMS = {}, // Same
-  keys = [], // Fallback array
+  monthlyData = {},
+  weeklyRMS = {},
+  keys = [],
 }: Props) {
   const {
     monthlyAggregates,
@@ -27,104 +26,144 @@ export function SensorDashboard({
     clearAllWeeklyRMS,
   } = useSensorStore();
 
-  // Guard: Early return if no keys (prevents .every on undefined/empty)
-  if (!keys || keys.length === 0) {
-    console.warn('SensorDashboard: No keys—skipping render');
-    return null; // Or placeholder UI: <div>Select sensors...</div>
-  }
+  // ─────────────────────────────────────────────────────────────
+  // ALL HOOKS FIRST — ALWAYS called, no matter what
+  // ─────────────────────────────────────────────────────────────
+  const hasKeys = keys.length > 0;
 
-  // Memo: Safe with ?? (guards against undefined monthlyAggregates)
-  const isMonthlyCached = useMemo(
-    () => keys.every(key => (monthlyAggregates?.[key]?.length ?? 0) > 0),
-    [keys, monthlyAggregates]
-  );
-  const isWeeklyCached = useMemo(
-    () => keys.every(key => (storeWeeklyRMS?.[key] ?? 0) > 0),
-    [keys, storeWeeklyRMS]
-  );
+  const isMonthlyCached = useMemo(() => {
+    if (!hasKeys) return false;
+    return keys.every(key => monthlyAggregates?.[key]?.length ?? 0 > 0);
+  }, [hasKeys, keys, monthlyAggregates]);
 
-  // Hydrate monthly: Props first (partial-safe), then fetch if missing
+  const isWeeklyCached = useMemo(() => {
+    if (!hasKeys) return false;
+    return keys.every(key => storeWeeklyRMS?.[key] != null);
+  }, [hasKeys, keys, storeWeeklyRMS]);
+
+  // Monthly hydration
   useEffect(() => {
-    // Hydrate from partial props (server data—no fetch)
+    if (!hasKeys) return;
+
     if (monthlyData && Object.keys(monthlyData).length > 0) {
-      console.log('Hydrating monthly from partial server props');
       keys.forEach(key => {
-        if (monthlyData[key]) { // Safe: Partial may omit keys
-          updateMonthlyAggregates(key, monthlyData[key]);
+        if (monthlyData[key]?.length) {
+          updateMonthlyAggregates(key, monthlyData[key]!);
         }
       });
-      return; // Props win—skip fetch
+      return;
     }
 
-    // Client fallback if not cached
     if (!isMonthlyCached) {
-      console.log('Fetching monthly (not cached/props)');
-      getOldSensorData('monthly', keys).then(payload => {
-        keys.forEach(key => {
-          if (payload[key]) updateMonthlyAggregates(key, payload[key]);
-        });
-      }).catch(err => console.error('Monthly error:', err));
-    } else {
-      console.log('Using cached monthly');
+      getOldSensorData('monthly', keys)
+        .then(payload => {
+          keys.forEach(key => {
+            if (payload[key]?.length) {
+              updateMonthlyAggregates(key, payload[key]!);
+            }
+          });
+        })
+        .catch(err => console.error('Monthly fetch failed:', err));
     }
-  }, [keys, isMonthlyCached, monthlyData, updateMonthlyAggregates]); // monthlyData dep for prop changes
+  }, [hasKeys, keys, monthlyData, isMonthlyCached, updateMonthlyAggregates]);
 
-  // Hydrate weekly: Similar partial handling
+  // Weekly RMS hydration
   useEffect(() => {
+    if (!hasKeys) return;
+
     if (weeklyRMS && Object.keys(weeklyRMS).length > 0) {
-      console.log('Hydrating weekly RMS from partial server props');
       keys.forEach(key => {
         if (typeof weeklyRMS[key] === 'number') {
-          updateWeeklyRMS(key, weeklyRMS[key]);
+          updateWeeklyRMS(key, weeklyRMS[key]!);
         }
       });
       return;
     }
 
     if (!isWeeklyCached) {
-      console.log('Fetching weekly RMS (not cached/props)');
-      getWeeksProfitData('last week', keys).then(payload => {
-        payload.forEach(({ x: keyStr, y: rms }) => {
-          const key = keyStr as SensorKey;
-          if (keys.includes(key)) updateWeeklyRMS(key, rms);
-        });
-      }).catch(err => console.error('Weekly RMS error:', err));
-    } else {
-      console.log('Using cached weekly RMS');
+      getWeeksProfitData('last week', keys)
+        .then(payload => {
+          payload.forEach(({ x: keyStr, y: rms }) => {
+            const key = keyStr as SensorKey;
+            if (keys.includes(key)) {
+              updateWeeklyRMS(key, rms);
+            }
+          });
+        })
+        .catch(err => console.error('Weekly RMS fetch failed:', err));
     }
-  }, [keys, isWeeklyCached, weeklyRMS, updateWeeklyRMS]);
+  }, [hasKeys, keys, weeklyRMS, isWeeklyCached, updateWeeklyRMS]);
 
-  // Render: Safe access with ?./?? (no crashes on partials)
-  const renderForKey = (key: SensorKey) => {
-    const data = monthlyAggregates?.[key] || [];
+  // ─────────────────────────────────────────────────────────────
+  // Early return AFTER all hooks
+  // ─────────────────────────────────────────────────────────────
+  if (!hasKeys) {
     return (
-      <div key={key} className="mb-4 p-2 border rounded">
-        <h4 className="font-bold">{key}</h4>
-        <ul>
-          {data.map((point, idx) => (
-            <li key={idx}>{point.x}: {point.y.toFixed(2)}</li>
-          ))}
-        </ul>
-        <p>Weekly RMS: {storeWeeklyRMS?.[key]?.toFixed(3) ?? 'N/A'}</p>
+      <div className="col-span-12 mt-6 p-8 text-center">
+        <p className="text-lg text-muted-foreground">No sensors selected</p>
       </div>
     );
-  };
+  }
 
+  // ─────────────────────────────────────────────────────────────
+  // Render main UI
+  // ─────────────────────────────────────────────────────────────
   const handleClear = () => {
     clearAllMonthlyAggregates();
     clearAllWeeklyRMS();
   };
 
-//   return (
-//     <div className="col-span-12 mt-4 p-4 border rounded bg-gray-50">
-//       <h3 className="mb-2 text-lg font-semibold">Sensors (Partial/Cached)</h3>
-//       {keys.map(renderForKey)}
-//       <button
-//         onClick={handleClear}
-//         className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-//       >
-//         Clear Cache
-//       </button>
-//     </div>
-//   );
+  return (
+    <div className="col-span-12 mt-6 space-y-6 rounded-lg bg-white p-6 shadow-sm dark:bg-gray-dark">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold text-dark dark:text-white">
+          Sensor Data ({keys.length} selected)
+        </h3>
+        <button
+          onClick={handleClear}
+          className="rounded px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+        >
+          Clear Cache
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {keys.map(key => {
+          const points = monthlyAggregates?.[key] || [];
+          const rms = storeWeeklyRMS?.[key];
+
+          return (
+            <div
+              key={key}
+              className="rounded-lg border bg-card p-5 shadow-sm dark:border-gray-700"
+            >
+              <h4 className="mb-3 font-semibold text-dark dark:text-white">
+                {key}
+              </h4>
+
+              {points.length > 0 ? (
+                <div className="space-y-1 text-sm">
+                  <p>
+                    <span className="text-muted-foreground">Latest:</span>{' '}
+                    <strong>{points[points.length - 1].y.toFixed(2)}</strong>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Points:</span>{' '}
+                    {points.length}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Loading data...</p>
+              )}
+
+              <p className="mt-3 text-sm">
+                <span className="text-muted-foreground">Weekly RMS:</span>{' '}
+                <strong>{rms != null ? rms.toFixed(3) : '—'}</strong>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }

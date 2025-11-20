@@ -1,21 +1,18 @@
+// components/Chat/Chat.tsx
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { UserModelMessage, type CoreMessage } from 'ai';
-import { xai } from '@ai-sdk/xai';
-import { useState } from 'react';
-import { continueTextConversation } from '@/app/actions';
-import { readStreamableValue } from '@ai-sdk/rsc';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { IconArrowUp } from '@/components/ui/icons';
 import Close from '@mui/icons-material/Close';
-import Link from 'next/link';
-import AboutCard from '@/components/cards/aboutcard';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { CoreMessage, streamText } from 'ai';
+import { continueTextConversation } from '@/app/actions';
+import { readStreamableValue } from '@ai-sdk/rsc';
+import AboutCard from '@/components/cards/aboutcard';
 import { useSensorStore } from '@/services/store';
-
-export const maxDuration = 30;
 
 interface ChatProps {
   onClose: () => void;
@@ -24,80 +21,98 @@ interface ChatProps {
 export default function Chat({ onClose }: ChatProps) {
   const [messages, setMessages] = useState<CoreMessage[]>([]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const state = useSensorStore.getState();
+  const { rawData, monthlyAggregates } = state;
+
+  // Build system prompt once (expensive JSON stringify)
+  const systemPrompt = `
+You are an AI assistant with the wisdom of Darwi Odrade from Dune.
+
+You monitor environmental sensors in a smart city. Use the data below to answer questions.
+
+Keep responses **under 48 words**. Use markdown for clarity.
+
+Reference:
+- Coral Gables Collection (collection_4596033a-4422-4a49-b7ba-c24e3eda17c1)
+- Real-time sensor data
+- Recent X posts & news for public sentiment
+
+**Raw Data:**
+\`\`\`json
+${JSON.stringify(rawData, null, 2)}
+\`\`\`
+
+**Monthly Aggregates:**
+\`\`\`json
+${JSON.stringify(monthlyAggregates, null, 2)}
+\`\`\`
+  `.trim();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
-     const state = useSensorStore.getState();
+    const userMessage: CoreMessage = { role: 'user', content: input };
+    const updatedMessages: CoreMessage[] = [...messages, userMessage];
 
-    const supportData = state.rawData;
-     const supportData2 = state.monthlyAggregates;
-
-     const SupportData = 
-     `
-     You are an AI chatbot assitant with the intelligence of Darwi Odrade from Dune.
-
-    Please be mindful of your responses to try and first ask the user for references before listing them so that the UX is bettery for a chatbot assitant
-     You are tasked with monitoring and analyzing environmental sensor data from a smart city network to guide its development and public health strategies.
-
-
-     Use the data below to help answer the user's question. 
-    
-    keep text responses limited to 48 words or less (dont show word count in response). 
-    
-    Please leverage markdown to provide a good UX when responding.
-
-    Please reference files in the Coral Gables Collection collection_4596033a-4422-4a49-b7ba-c24e3eda17c1
-    
-    Please also reference sensor data
-
-    and recent posts on X and news articles to provide accurate and relevant information as well as public sentiment where applicable in real time.
-
-    Here is the sensor raw data:
-      ${JSON.stringify(supportData)}. 
-      Here are the monthly aggregates: ${JSON.stringify(supportData2)}. 
-      
- `;
-
-
-
-//console.log("Support Data:", SupportData);
-    const userMsg: CoreMessage = { role: 'user', content: input };
-    const apiMessages = [{ role: 'system', content: SupportData }, ...messages, userMsg];
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    setMessages(updatedMessages);
     setInput('');
+    setIsLoading(true);
 
-    
-
-   // console.log("Sensor Store State in Chat:", state);
-
-    const result = await continueTextConversation(apiMessages);
-    for await (const chunk of readStreamableValue(result)) {
-      setMessages([
-        ...newMessages,
-        { role: 'assistant', content: chunk as string }
+    try {
+      const result = await continueTextConversation([
+        { role: 'system', content: systemPrompt },
+        ...messages,
+        userMessage,
       ]);
+
+      let assistantContent = '';
+      for await (const chunk of readStreamableValue(result)) {
+        if (typeof chunk === 'string') {
+          assistantContent += chunk;
+          setMessages([
+            ...updatedMessages,
+            { role: 'assistant', content: assistantContent },
+          ]);
+        }
+      }
+
+      // Final update
+      setMessages([
+        ...updatedMessages,
+        { role: 'assistant', content: assistantContent },
+      ]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      setMessages([
+        ...updatedMessages,
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an error. Please try again.',
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white">
-
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between p-3 border-b border-border bg-background">
-        <h3 className="font-medium text-lg">Chat</h3>
+    <div className="flex h-full w-full flex-col bg-white">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border bg-background p-3">
+        <h3 className="text-lg font-medium">City Intelligence</h3>
         <button
           onClick={onClose}
-          className="p-1 rounded-md hover:bg-muted transition-colors"
-          aria-label="Close"
+          className="rounded-md p-1 hover:bg-muted transition-colors"
+          aria-label="Close chat"
         >
           <Close className="h-5 w-5" />
         </button>
       </div>
 
-      {/* ── Scrollable messages ── */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <AboutCard />
@@ -110,10 +125,10 @@ export default function Chat({ onClose }: ChatProps) {
               >
                 <div
                   className={`
-                    max-w-[75%] rounded-2xl px-4 py-2
+                    max-w-[85%] rounded-2xl px-4 py-3 text-sm
                     ${m.role === 'user'
-                      ? 'bg-primary text-white'
-                      : 'bg-muted text-black'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground'
                     }
                   `}
                 >
@@ -121,36 +136,38 @@ export default function Chat({ onClose }: ChatProps) {
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl bg-muted px-4 py-3 text-sm">
+                  <span className="animate-pulse">Thinking...</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* ── Input (pinned) ── */}
+      {/* Input */}
       <div className="border-t border-border bg-background p-4">
-        <div className="max-w-xl mx-auto">
-          <Card className="p-2 rounded-xl shadow-sm">
-            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <div className="mx-auto max-w-2xl">
+          <Card className="overflow-hidden rounded-xl shadow-sm">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2">
               <Input
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Ask me anything..."
-                className="flex-1 border-0 focus-visible:ring-0 focus-visible:outline-none"
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about air quality, power, sensors..."
+                className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                disabled={isLoading}
               />
               <Button
                 type="submit"
-                disabled={!input.trim()}
                 size="icon"
+                disabled={!input.trim() || isLoading}
                 className="rounded-full"
               >
-                <IconArrowUp className="h-4 w-4 " />
+                <IconArrowUp className="h-4 w-4" />
               </Button>
             </form>
-
-            {messages.length > 1 && (
-              <div className="mt-2 text-center">
-               
-              </div>
-            )}
           </Card>
         </div>
       </div>

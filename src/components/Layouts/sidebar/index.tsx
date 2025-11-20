@@ -4,7 +4,7 @@ import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NAV_DATA } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
@@ -15,32 +15,30 @@ export function Sidebar() {
   const { setIsOpen, isOpen, isMobile, toggleSidebar } = useSidebarContext();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
-  const toggleExpanded = (title: string) => {
-    setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
+// Stable toggle function (wrapped in useCallback)
+  const toggleExpanded = useCallback((title: string) => {
+    setExpandedItems((prev) =>
+      prev.includes(title) ? [] : [title]  // Only one expanded
+      // For multiple: prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
+    );
+  }, []);
 
-    // Uncomment the following line to enable multiple expanded items
-    // setExpandedItems((prev) =>
-    //   prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
-    // );
-  };
-
+  // Auto-expand parent menu when a subpage is active
   useEffect(() => {
-    // Keep collapsible open, when it's subpage is active
-    NAV_DATA.some((section) => {
-      return section.items.some((item) => {
-        return item.items.some((subItem) => {
-          if (subItem.url === pathname) {
-            if (!expandedItems.includes(item.title)) {
-              toggleExpanded(item.title);
-            }
+    let shouldExpand: string | null = null;
 
-            // Break the loop
-            return true;
-          }
-        });
+    NAV_DATA.forEach((section) => {
+      section.items.forEach((item) => {
+        if (item.items?.some((subItem) => subItem.url === pathname)) {
+          shouldExpand = item.title;
+        }
       });
     });
-  }, [pathname]);
+
+    if (shouldExpand && !expandedItems.includes(shouldExpand)) {
+      toggleExpanded(shouldExpand);
+    }
+  }, [pathname, expandedItems, toggleExpanded]); // All deps included → no warning
 
   return (
     <>

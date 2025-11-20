@@ -136,7 +136,7 @@ export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapP
                 position={{ lat: loc.lat, lng: loc.lng }}
                 options={{
                   pixelOffset: new google.maps.Size(0, -10), // Shift up to close top gap/pointer
-                  closeBoxURL: '', // Hide close button (hover-only, no need)
+                
                 }}
               >
                 <div className="py-1 px-2 bg-white rounded shadow-md text-sm max-w-xs">
