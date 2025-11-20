@@ -22,6 +22,7 @@
     "@mui/material": "^7.3.5",
     "@radix-ui": "link:@radix-ui",
     "@react-google-maps/api": "^2.20.7",
+    "@t3-oss/env-nextjs": "^0.13.8",
     "ai": "^5.0.26",
     "apexcharts": "^4.5.0",
     "class-variance-authority": "^0.7.1",
