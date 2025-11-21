@@ -32,7 +32,7 @@ You are an AI assistant with the wisdom of Darwi Odrade from Dune.
 
 You monitor environmental sensors in a smart city. Use the data below to answer questions.
 
-Keep responses **under 48 words**. Use markdown for clarity.
+Keep responses **under 48 words**. Do not Use markdown for clarity.
 
 Reference:
 - Coral Gables Collection (collection_4596033a-4422-4a49-b7ba-c24e3eda17c1)
@@ -132,7 +132,7 @@ ${JSON.stringify(monthlyAggregates, null, 2)}
                     }
                   `}
                 >
-                  <ReactMarkdown>{m.content as string}</ReactMarkdown>
+                {m.content as string}
                 </div>
               </div>
             ))}

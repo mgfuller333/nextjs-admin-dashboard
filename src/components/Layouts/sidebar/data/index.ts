@@ -12,10 +12,7 @@ export const NAV_DATA = [
             title: "Overview",
             url: "/",
           },
-          {
-            title: "Docs",
-            url: "/tables",
-          },
+          
         ],
       }
       // {

@@ -1,5 +1,6 @@
-// components/maps/device-locations-map.tsx (Revised: Bold Last Seen, space after :, hover show/hide, no indent/gap)
+// components/maps/device-locations-map.tsx
 "use client";
+
 import { GoogleMap, MarkerF, InfoWindowF, useJsApiLoader } from "@react-google-maps/api";
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
@@ -47,9 +48,12 @@ const darkStyle = [
 ];
 
 export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapProps) {
+  // Fixed: Use NEXT_PUBLIC_ + no libraries + stable ID
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY!,
-    libraries: ["places"],
+     id: "google-map-script", 
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+   
+    // No libraries → you're not using Places API
   });
 
   const { rawData } = useSensorStore();
@@ -79,12 +83,10 @@ export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapP
 
   const center = useMemo(() => {
     if (locations.length === 0) return CORAL_GABLES;
-
     const avg = locations.reduce(
       (acc, loc) => ({ lat: acc.lat + loc.lat, lng: acc.lng + loc.lng }),
       { lat: 0, lng: 0 }
     );
-
     return {
       lat: avg.lat / locations.length,
       lng: avg.lng / locations.length,
@@ -97,9 +99,10 @@ export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapP
     );
   }
 
-  // Color helpers for UX (simple thresholds)
-  const getAQIColor = (aqi: number) => aqi < 50 ? 'text-green-600' : aqi < 100 ? 'text-yellow-600' : 'text-red-600';
-  const getCO2Color = (co2: number) => co2 < 1000 ? 'text-green-600' : co2 < 2000 ? 'text-yellow-600' : 'text-red-600';
+  const getAQIColor = (aqi: number) =>
+    aqi < 50 ? "text-green-600" : aqi < 100 ? "text-yellow-600" : "text-red-600";
+  const getCO2Color = (co2: number) =>
+    co2 < 1000 ? "text-green-600" : co2 < 2000 ? "text-yellow-600" : "text-red-600";
 
   return (
     <GoogleMap
@@ -117,12 +120,13 @@ export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapP
     >
       {locations.map((loc) => {
         const isHovered = selectedMarker?.device === loc.device;
+
         return (
           <MarkerF
             key={loc.device}
             position={{ lat: loc.lat, lng: loc.lng }}
-            onMouseOver={() => setSelectedMarker(loc)} // Hover in: Show tooltip
-            onMouseOut={() => setSelectedMarker(null)} // Hover out: Hide tooltip
+            onMouseOver={() => setSelectedMarker(loc)}
+            onMouseOut={() => setSelectedMarker(null)}
             title={loc.device}
             label={{
               text: loc.device,
@@ -134,31 +138,29 @@ export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapP
             {isHovered && (
               <InfoWindowF
                 position={{ lat: loc.lat, lng: loc.lng }}
-                options={{
-                  pixelOffset: new google.maps.Size(0, -10), // Shift up to close top gap/pointer
-                
-                }}
+                options={{ pixelOffset: new google.maps.Size(0, -10) }}
               >
-                <div className="py-1 px-2 bg-white rounded shadow-md text-sm max-w-xs">
-                  <h4 className="font-bold mt-0 mb-1 text-gray-900">{loc.device}</h4>
-                  <p className="text-xs text-gray-500 mb-2 flex items-center">
-                    <span className="font-semibold">{`Last Seen: `}</span> {latestData.lastSeen} {/* Bold full label, space after : */}
+                <div className="max-w-xs rounded bg-white p-3 text-sm shadow-lg">
+                  <h4 className="mb-1 font-bold text-gray-900">{loc.device}</h4>
+                  <p className="mb-2 text-xs text-gray-500">
+                    <span className="font-semibold">Last Seen: </span>
+                    {latestData.lastSeen}
                   </p>
                   <p className="mb-1 flex items-center">
-                    <span className="mr-2">🔋</span>
-                    <span className="font-semibold">{`Battery Voltage: `}</span> {latestData.batV.toFixed(2)} V
+                    <span className="mr-2">Battery Voltage: </span>
+                    <strong>{latestData.batV.toFixed(2)} V</strong>
                   </p>
                   <p className={`mb-1 flex items-center ${getAQIColor(latestData.aqi)}`}>
-                    <span className="mr-2">🌿</span>
-                    <span className="font-semibold">{`AQI: `}</span> {latestData.aqi}
+                    <span className="mr-2">AQI: </span>
+                    <strong>{latestData.aqi}</strong>
                   </p>
                   <p className="mb-1 flex items-center">
-                    <span className="mr-2">⚡</span>
-                    <span className="font-semibold">{`Power Gen: `}</span> {latestData.powerGen.toFixed(2)} kW
+                    <span className="mr-2">Power Gen: </span>
+                    <strong>{latestData.powerGen.toFixed(2)} kW</strong>
                   </p>
                   <p className={`flex items-center ${getCO2Color(latestData.co2)}`}>
-                    <span className="mr-2">☁</span>
-                    <span className="font-semibold">{`CO2: `}</span> {latestData.co2} ppm
+                    <span className="mr-2">CO₂: </span>
+                    <strong>{latestData.co2} ppm</strong>
                   </p>
                 </div>
               </InfoWindowF>
@@ -166,6 +168,7 @@ export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapP
           </MarkerF>
         );
       })}
+
       {locations.length === 0 && (
         <MarkerF
           position={CORAL_GABLES}
