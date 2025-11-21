@@ -90,7 +90,7 @@ export async function getTopChannels(dailyReadings: any) {
 
   const onlineStatus = lastSeenTimestamp ? isOnlineStatus(lastSeenTimestamp) : 'Offline';
 
-  const status = onlineStatus === 'Online' ? 'online' : 'offline';
+  const status = onlineStatus === 'Online' ? 'ONLINE' : 'OFFLINE';
 
   return [
     {
