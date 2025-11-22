@@ -16,11 +16,11 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | NextAdmin - Next.js Dashboard Kit",
-    default: "NextAdmin - Next.js Dashboard Kit",
+    template: "%s | Odrade",
+    default: "Odrade",
   },
   description:
-    "Next.js admin dashboard toolkit with 200+ templates, UI components, and integrations for fast dashboard development.",
+    "Odrade teaches anyone how to respond to environmental and economic impacts of infrastructure—antime, anywhere.",
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
