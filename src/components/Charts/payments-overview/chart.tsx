@@ -1,3 +1,4 @@
+// components/Charts/payments-overview/chart.tsx
 "use client";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -29,6 +30,8 @@ export function SensorTimeChart({ data }: PropsType) {
       type: "area",
       toolbar: { show: false },
       fontFamily: "inherit",
+      zoom: { enabled: false },
+      selection: { enabled: false },
     },
     colors: colors.slice(0, series.length),
     stroke: {
@@ -49,11 +52,7 @@ export function SensorTimeChart({ data }: PropsType) {
       position: "top",
       horizontalAlign: "left",
       fontSize: "14px",
-      markers: {
-        size: 10,        // ← CORRECT: use `size`, not `width`/`height`
-        // width: 10,    // ← WRONG — TypeScript error
-        // height: 10,   // ← WRONG
-      },
+      markers: { size: 10 },
     },
     dataLabels: { enabled: false },
     tooltip: {
@@ -66,13 +65,30 @@ export function SensorTimeChart({ data }: PropsType) {
       axisBorder: { show: false },
       axisTicks: { show: false },
       labels: { style: { fontSize: "12px" } },
+      tickPlacement: "between",
+      crosshairs: { show: true },
     },
     yaxis: {
-      labels: { style: { fontSize: "12px" } },
+      labels: { style: { colors: ["transparent"] } }, // ← Fixed: colors (lowercase)
     },
     grid: {
       strokeDashArray: 5,
       yaxis: { lines: { show: true } },
+    },
+    // ← FIXED: Removed invalid 'normal' state
+    states: {
+      hover: {
+        filter: { type: "none" },
+      },
+      active: {
+        allowMultipleDataPointsSelection: false,
+        filter: { type: "none" },
+      },
+    },
+    noData: {
+      text: "No data available",
+      align: "center",
+      verticalAlign: "middle",
     },
     responsive: [
       { breakpoint: 1024, options: { chart: { height: 300 } } },
@@ -81,7 +97,7 @@ export function SensorTimeChart({ data }: PropsType) {
   };
 
   return (
-    <div className="-ml-4 -mr-5 h-[310px]">
+    <div className="h-[310px] w-full overflow-hidden touch-none -ml-4 -mr-5">
       <Chart options={options} series={series} type="area" height={310} />
     </div>
   );

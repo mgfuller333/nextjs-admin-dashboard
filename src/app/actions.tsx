@@ -1,7 +1,7 @@
 'use server';
 
 import { createStreamableValue, createStreamableUI } from '@ai-sdk/rsc';
-import { generateObject, ModelMessage, streamText } from 'ai';
+import { generateObject, CoreMessage, streamText } from 'ai';
 import { xai, createXai } from '@ai-sdk/xai';
 import { generateText } from 'ai';
 import { ReactNode } from 'react';
@@ -20,37 +20,26 @@ const xai_keyed = createXai({
 });
 
 // Streaming Chat 
-export async function continueTextConversation(messages: ModelMessage[]) {
-  const result = await streamText({
-    model: xai_keyed('grok-4-fast-reasoning'),
-    messages,
-     providerOptions: {
-    xai: {
-      searchParameters: {
-        mode: 'off', // 'auto', 'on', or 'off'
-        returnCitations: true,
-        maxSearchResults: 5,
-         sources: [
-          {
-            type: 'web',
-          
+export async function continueTextConversation(messages: any[]) {
+  try {
+    const { text } = await generateText({
+      model: xai('grok-4-fast-reasoning'), // or 'grok-4-fast-reasoning' if you prefer
+      messages,
+      temperature: 0.6,
+      providerOptions: {
+        xai: {
+          searchParameters: {
+            mode: 'off',
           },
-          {
-            type: 'news',
-            country: 'US',
-          },
-          {
-            type: 'x',
-           
-          },
-        ],
+        },
       },
-    },
-  },
-  });
+    });
 
-  const stream = createStreamableValue(result.textStream);
-  return stream.value;
+    return text.trim() || "I'm not sure how to respond to that.";
+  } catch (error) {
+    console.error('Grok API error:', error);
+    return "Sorry, I'm having trouble connecting right now. Please try again.";
+  }
 }
 
 // Gen UIs 

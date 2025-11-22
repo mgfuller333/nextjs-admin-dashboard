@@ -10,7 +10,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 export default function AboutCard() {
   return (
-    <div className="max-w-xl mx-auto">
+    <div className="max-w-xl mx-auto text-white/95 backdrop-blur-2xl">
       <Card>
         <CardHeader>
           <CardTitle>Odrade AI</CardTitle>

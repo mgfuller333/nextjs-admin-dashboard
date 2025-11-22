@@ -20,7 +20,7 @@ export default function ChatbotButton() {
           <div
             className="
               fixed bottom-20 right-4 z-[1300]
-              flex bg-background border border-border
+              flex bg-background
               shadow-2xl rounded-lg 
               h-[500px] w-[400px]
             "

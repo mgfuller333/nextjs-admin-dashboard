@@ -48,12 +48,9 @@ const darkStyle = [
 ];
 
 export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapProps) {
-  // Fixed: Use NEXT_PUBLIC_ + no libraries + stable ID
   const { isLoaded } = useJsApiLoader({
-     id: "google-map-script", 
+    id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-   
-    // No libraries → you're not using Places API
   });
 
   const { rawData } = useSensorStore();
@@ -117,57 +114,63 @@ export function DeviceLocationsMap({ locations, className }: DeviceLocationsMapP
         streetViewControl: false,
         fullscreenControl: true,
       }}
+      // Click anywhere on map to close tooltip
+      onClick={() => setSelectedMarker(null)}
     >
-      {locations.map((loc) => {
-        const isHovered = selectedMarker?.device === loc.device;
-
-        return (
-          <MarkerF
-            key={loc.device}
-            position={{ lat: loc.lat, lng: loc.lng }}
-            onMouseOver={() => setSelectedMarker(loc)}
-            onMouseOut={() => setSelectedMarker(null)}
-            title={loc.device}
-            label={{
-              text: loc.device,
-              color: "white",
-              fontSize: "12px",
-              fontWeight: "bold",
-            }}
-          >
-            {isHovered && (
-              <InfoWindowF
-                position={{ lat: loc.lat, lng: loc.lng }}
-                options={{ pixelOffset: new google.maps.Size(0, -10) }}
-              >
-                <div className="max-w-xs rounded bg-white p-3 text-sm shadow-lg">
-                  <h4 className="mb-1 font-bold text-gray-900">{loc.device}</h4>
-                  <p className="mb-2 text-xs text-gray-500">
-                    <span className="font-semibold">Last Seen: </span>
-                    {latestData.lastSeen}
-                  </p>
-                  <p className="mb-1 flex items-center">
-                    <span className="mr-2">Battery Voltage: </span>
-                    <strong>{latestData.batV.toFixed(2)} V</strong>
-                  </p>
-                  <p className={`mb-1 flex items-center ${getAQIColor(latestData.aqi)}`}>
-                    <span className="mr-2">AQI: </span>
-                    <strong>{latestData.aqi}</strong>
-                  </p>
-                  <p className="mb-1 flex items-center">
-                    <span className="mr-2">Power Gen: </span>
-                    <strong>{latestData.powerGen.toFixed(2)} kW</strong>
-                  </p>
-                  <p className={`flex items-center ${getCO2Color(latestData.co2)}`}>
-                    <span className="mr-2">CO₂: </span>
-                    <strong>{latestData.co2} ppm</strong>
-                  </p>
-                </div>
-              </InfoWindowF>
-            )}
-          </MarkerF>
-        );
-      })}
+      {locations.map((loc) => (
+        <MarkerF
+          key={loc.device}
+          position={{ lat: loc.lat, lng: loc.lng }}
+          // Toggle on click/tap — works perfectly on mobile + desktop
+          onClick={(e) => {
+            e.domEvent?.stopPropagation(); // Prevent map click from closing it immediately
+            setSelectedMarker(prev => prev?.device === loc.device ? null : loc);
+          }}
+          title={loc.device}
+          label={{
+            text: loc.device,
+            color: "white",
+            fontSize: "12px",
+            fontWeight: "bold",
+          }}
+        >
+          {/* Show InfoWindow when this marker is selected */}
+          {selectedMarker?.device === loc.device && (
+            <InfoWindowF
+              position={{ lat: loc.lat, lng: loc.lng }}
+              onCloseClick={() => setSelectedMarker(null)}
+              options={{
+                pixelOffset: new google.maps.Size(0, -10),
+                maxWidth: 280,
+              }}
+            >
+              <div className="rounded bg-white p-3 text-sm shadow-lg">
+                <h4 className="mb-1 font-bold text-gray-900">{loc.device}</h4>
+                <p className="mb-2 text-xs text-gray-500">
+                  <span className="font-semibold">Last Seen: </span>
+                  {latestData.lastSeen}
+                </p>
+                <p className="mb-1 flex items-center">
+                  <span className="mr-2">Battery Voltage: </span>
+                  <strong>{latestData.batV.toFixed(2)} V</strong>
+                </p>
+                <p className={`mb-1 flex items-center ${getAQIColor(latestData.aqi)}`}>
+                  <span className="mr-2">AQI: </span>
+                  <strong>{latestData.aqi}</strong>
+                </p>
+                <p className="mb-1 flex items-center">
+                  <span className="mr-2">Power Gen: </span>
+                  <strong>{latestData.powerGen.toFixed(2)} kW</strong>
+                </p>
+                <p className={`flex items-center ${getCO2Color(latestData.co2)}`}>
+                  <span className="mr-2">CO₂: </span>
+                  <strong>{latestData.co2} ppm</strong>
+                </p>
+              </div>
+            </InfoWindowF>
+          )}
+        </MarkerF>
+      ))}
 
       {locations.length === 0 && (
         <MarkerF

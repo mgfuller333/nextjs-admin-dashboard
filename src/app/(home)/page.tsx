@@ -81,9 +81,8 @@ export default async function Home({ searchParams }: Props) {
             <ChatsCard  {...overviewData}/>
         </Suspense>
 
-        
+          <ChatbotButton />
       </div>
-        <ChatbotButton />
     </>
   );
 }

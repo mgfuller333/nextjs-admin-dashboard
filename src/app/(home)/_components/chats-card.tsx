@@ -87,7 +87,7 @@ export async function ChatsCard({ weekly, latest }: KPIProps) {
                     </span>
 
                     {/* Summary: 4–5 lines, truncates gracefully */}
-                    <p className="line-clamp-4 text-dark-6 dark:text-dark-5 leading-relaxed">
+                    <p className="line-clamp-4 text-dark-4 dark:dark:text-gray-400 leading-relaxed">
                       {insightSummary}
                     </p>
                   </div>
