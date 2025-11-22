@@ -64,9 +64,15 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
   const Markdown = ({ children }: { children: string }) => (
     <ReactMarkdown
       components={{
-        p: ({ node, ...props }) => <p className="text-sm leading-relaxed" {...props} />,
-        strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
-        em: ({ node, ...props }) => <em className="italic" {...props} />,
+        p: ({ node, ...props }) => (
+          <p className="text-sm leading-relaxed text-black dark:text-white" {...props} />
+        ),
+        strong: ({ node, ...props }) => (
+          <strong className="font-semibold text-black dark:text-white" {...props} />
+        ),
+        em: ({ node, ...props }) => (
+          <em className="italic text-black/90 dark:text-white/90" {...props} />
+        ),
       }}
     >
       {children}
@@ -84,9 +90,9 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
 
   return (
     <div className="flex h-full w-full flex-col bg-background/70 backdrop-blur-xl supports-backdrop-blur:bg-background/60">
-      {/* Header - Odrade AI on left, close on right */}
+      {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-border/50 bg-background/50 backdrop-blur-xl px-5 py-3">
-        <h3 className="text-base font-semibold tracking-tight text-foreground">
+        <h3 className="text-base font-semibold tracking-tight text-black dark:text-white">
           Odrade AI
         </h3>
 
@@ -95,7 +101,7 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
           className="rounded-full p-2 hover:bg-accent/50 transition-colors"
           aria-label="Close chat"
         >
-          <Close className="h-6 w-6 text-foreground/70" />
+          <Close className="h-6 w-6 text-black/70 dark:text-white/70" />
         </button>
       </div>
 
@@ -120,7 +126,7 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
                       max-w-[84%] rounded-2xl px-4 py-3 text-sm
                       bg-background/70 backdrop-blur-md
                       border border-border/50
-                      text-foreground shadow-lg
+                      text-black dark:text-white shadow-lg
                       ${m.role === 'user'
                         ? 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'
                         : ''
@@ -135,7 +141,9 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="max-w-[84%] rounded-2xl bg-background/70 backdrop-blur-md border border-border/50 px-4 py-3 text-sm shadow-lg">
-                    <span className="animate-pulse text-foreground/80">Thinking...</span>
+                    <span className="animate-pulse text-black/80 dark:text-white/80">
+                      Thinking...
+                    </span>
                   </div>
                 </div>
               )}
@@ -152,8 +160,9 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about air quality, power, sensors..."
-              className="flex-1 bg-background/70 backdrop-blur-md border-border/70 text-foreground 
-                       placeholder:text-muted-foreground/70
+              className="flex-1 bg-background/70 backdrop-blur-md border-border/70 
+                       text-black dark:text-white 
+                       placeholder:text-black/60 dark:placeholder:text-white/60
                        focus-visible:ring-1 focus-visible:ring-ring 
                        focus-visible:border-ring/50
                        shadow-md"
