@@ -53,7 +53,6 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
         ...messages,
         userMessage,
       ]);
-
       setMessages([...newMessages, { role: 'assistant', content: reply }]);
     } catch {
       setMessages([...newMessages, { role: 'assistant', content: 'Error.' }]);
@@ -65,9 +64,9 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
   const Markdown = ({ children }: { children: string }) => (
     <ReactMarkdown
       components={{
-        p: ({ node, ...props }) => <p className="text-sm leading-relaxed opacity-95" {...props} />,
-        strong: ({ node, ...props }) => <strong className="font-semibold opacity-100" {...props} />,
-        em: ({ node, ...props }) => <em className="italic opacity-90" {...props} />,
+        p: ({ node, ...props }) => <p className="text-sm leading-relaxed" {...props} />,
+        strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+        em: ({ node, ...props }) => <em className="italic" {...props} />,
       }}
     >
       {children}
@@ -84,75 +83,89 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
     );
 
   return (
-    <div className="flex h-full w-full flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-white/8 backdrop-blur-2xl p-3">
-        <h3 className="text-sm font-semibold text-white/95">City Intelligence</h3>
+    <div className="flex h-full w-full flex-col bg-background/70 backdrop-blur-xl supports-backdrop-blur:bg-background/60">
+      {/* Header - Odrade AI on left, close on right */}
+      <div className="flex shrink-0 items-center justify-between border-b border-border/50 bg-background/50 backdrop-blur-xl px-5 py-3">
+        <h3 className="text-base font-semibold tracking-tight text-foreground">
+          Odrade AI
+        </h3>
+
         <button
           onClick={onClose}
-          className="rounded-lg p-1.5 hover:bg-white/15 transition-colors"
-          aria-label="Close"
+          className="rounded-full p-2 hover:bg-accent/50 transition-colors"
+          aria-label="Close chat"
         >
-          <Close className="h-4 w-4 text-white/95" />
+          <Close className="h-6 w-6 text-foreground/70" />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center">
-            <AboutCard />
-          </div>
-        ) : (
-          <>
-            {messages.map((m, i) => (
-              <div
-                key={i}
-                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+      <div className="flex-1 overflow-y-auto px-safe pb-safe pt-4">
+        <div className="mx-auto w-full max-w-full px-4 sm:px-6">
+          {messages.length === 0 ? (
+            <div className="flex h-full items-center justify-center">
+              <div className="w-full max-w-sm">
+                <AboutCard />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((m, i) => (
                 <div
-                  className={`
-                    max-w-[82%] rounded-2xl px-4 py-3 text-sm
-                    backdrop-blur-xl border border-white/25
-                    ${m.role === 'user'
-                      ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-white/95'
-                      : 'bg-white/15 text-white/95'
-                    }
-                  `}
+                  key={i}
+                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  {renderContent(m.content)}
+                  <div
+                    className={`
+                      max-w-[84%] rounded-2xl px-4 py-3 text-sm
+                      bg-background/70 backdrop-blur-md
+                      border border-border/50
+                      text-foreground shadow-lg
+                      ${m.role === 'user'
+                        ? 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'
+                        : ''
+                      }
+                    `}
+                  >
+                    {renderContent(m.content)}
+                  </div>
                 </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl bg-white/15 backdrop-blur-xl px-4 py-3 text-sm">
-                  <span className="animate-pulse text-white/95">Thinking...</span>
+              ))}
+
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="max-w-[84%] rounded-2xl bg-background/70 backdrop-blur-md border border-border/50 px-4 py-3 text-sm shadow-lg">
+                    <span className="animate-pulse text-foreground/80">Thinking...</span>
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/20 bg-white/8 backdrop-blur-2xl p-4">
-        <div className="mx-auto max-w-2xl">
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+      <div className="shrink-0 border-t border-border/50 bg-background/50 backdrop-blur-xl px-safe py-4">
+        <div className="mx-auto w-full max-w-full px-4 sm:px-6">
+          <form onSubmit={handleSubmit} className="flex items-center gap-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about air quality, power, sensors..."
-              className="flex-1 bg-white/15 border-white/30 text-white placeholder:text-white/95 focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:border-white/50"
+              className="flex-1 bg-background/70 backdrop-blur-md border-border/70 text-foreground 
+                       placeholder:text-muted-foreground/70
+                       focus-visible:ring-1 focus-visible:ring-ring 
+                       focus-visible:border-ring/50
+                       shadow-md"
               disabled={isLoading}
             />
             <Button
               type="submit"
               size="icon"
               disabled={!input.trim() || isLoading}
-              className="rounded-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+              className="rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-border/50 h-11 w-11 shrink-0 backdrop-blur-md shadow-md"
             >
-              <IconArrowUp className="h-4 w-4" />
+              <IconArrowUp className="h-5 w-5" />
             </Button>
           </form>
         </div>

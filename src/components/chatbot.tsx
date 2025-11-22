@@ -1,3 +1,4 @@
+// components/ChatbotButton.tsx
 'use client';
 
 import Chat from '@/components/chat';
@@ -13,24 +14,27 @@ export default function ChatbotButton() {
 
   return (
     <>
-      {/* Page content */}
-      <div className="relative flex h-[calc(100vh_-_theme(spacing.16))] overflow-hidden pb-10 flex-col">
-        {/* Floating chat window */}
+      <div className="relative flex h-[calc(100vh-theme(spacing.16))] flex-col overflow-hidden pb-10">
+        {/* Floating Chat Window - Mobile-First Responsive */}
         {isChatOpen && (
           <div
-            className="
-              fixed bottom-20 right-4 z-[1300]
-              flex bg-background
-              shadow-2xl rounded-lg 
-              h-[500px] w-[400px]
-            "
+            className={`
+              fixed inset-x-0 bottom-20 z-[1300] mx-4 
+              sm:inset-x-auto sm:right-4 sm:left-auto sm:mx-0
+              max-w-full sm:max-w-lg
+              h-[520px]
+              shadow-2xl rounded-2xl
+              overflow-hidden
+              border border-white/10
+              bg-background backdrop-blur-sm
+            `}
           >
             <Chat onClose={closeChat} />
           </div>
         )}
       </div>
 
-      {/* FAB – only visible when chat is closed */}
+      {/* FAB */}
       {!isChatOpen && (
         <Fab
           color="primary"
@@ -38,8 +42,8 @@ export default function ChatbotButton() {
           onClick={toggleChat}
           sx={{
             position: 'fixed',
-            bottom: 16,
-            right: 16,
+            bottom: { xs: 16, sm: 24 },
+            right: { xs: 16, sm: 24 },
             zIndex: 1300,
           }}
         >

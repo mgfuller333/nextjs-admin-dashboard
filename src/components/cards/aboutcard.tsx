@@ -16,8 +16,8 @@ export default function AboutCard() {
           <CardTitle>Odrade AI</CardTitle>
      
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground/90 leading-normal prose"> 
-          <p className="mb-3">Odrade teaches anyone how to respond to environmental and economic impacts of infrastructure—anywhere, anytime.</p>
+        <CardContent className="text-sm text-muted-foreground/90 leading-normal prose pb-2"> 
+          <p className="mb-3">Odrade teaches anyone how to respond to environmental and economic impacts of infrastructure—antime, anywhere.</p>
           <p className="mb-3 font-semibold">
             <CheckCircleIcon className="inline-block mr-2 mb-1 text-green-500" />
             Connected Public City Planning Documents 

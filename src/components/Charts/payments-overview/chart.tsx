@@ -4,12 +4,13 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
+import { useMemo } from "react";
+
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 type PropsType = {
   data: Record<string, { x: string | number; y: number }[]>;
 };
-
-const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export function SensorTimeChart({ data }: PropsType) {
   const isMobile = useIsMobile();
@@ -19,12 +20,22 @@ export function SensorTimeChart({ data }: PropsType) {
     data: points,
   }));
 
+  const dataPointCount = series[0]?.data.length ?? 0;
+
   const colors = [
-    "#5750F1", "#0ABEF9", "#282623ff", "#10B981", "#EF4444",
-    "#8B5CF6", "#EC4899", "#14B8A6", "#F97316", "#6366F1"
+    "#5750F1",
+    "#0ABEF9",
+    "#282623",
+    "#10B981",
+    "#EF4444",
+    "#8B5CF6",
+    "#EC4899",
+    "#14B8A6",
+    "#F97316",
+    "#6366F1",
   ];
 
-  const options: ApexOptions = {
+  const options: ApexOptions = useMemo(() => ({
     chart: {
       height: 310,
       type: "area",
@@ -48,11 +59,14 @@ export function SensorTimeChart({ data }: PropsType) {
       },
     },
     legend: {
-      show: true,
+      show: series.length > 1,
       position: "top",
       horizontalAlign: "left",
       fontSize: "14px",
-      markers: { size: 10 },
+      markers: {
+        // Correct way: use `size` instead of width/height
+        size: 10,
+      },
     },
     dataLabels: { enabled: false },
     tooltip: {
@@ -63,42 +77,75 @@ export function SensorTimeChart({ data }: PropsType) {
     xaxis: {
       type: "category",
       axisBorder: { show: false },
-      axisTicks: { show: false },
-      labels: { style: { fontSize: "12px" } },
+      axisTicks: { show: true, height: 6 },
       tickPlacement: "between",
       crosshairs: { show: true },
+      tickAmount: isMobile
+        ? dataPointCount >= 12
+          ? 6
+          : Math.max(3, dataPointCount - 1)
+        : undefined,
+      labels: {
+        style: { fontSize: "12px" },
+        rotate: isMobile ? -45 : 0,
+        formatter: (value: string) => {
+          try {
+            if (/^\d{4}-\d{2}$/.test(value)) {
+              const [y, m] = value.split("-");
+              const date = new Date(parseInt(y), parseInt(m) - 1);
+              return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+            }
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+            }
+          } catch {}
+          return value;
+        },
+      },
     },
     yaxis: {
-      labels: { style: { colors: ["transparent"] } }, // ← Fixed: colors (lowercase)
+      labels: {
+        style: { colors: "#9CA3AF", fontSize: "12px" },
+      },
     },
     grid: {
       strokeDashArray: 5,
+      borderColor: "#E5E7EB",
       yaxis: { lines: { show: true } },
     },
-    // ← FIXED: Removed invalid 'normal' state
     states: {
-      hover: {
-        filter: { type: "none" },
-      },
-      active: {
-        allowMultipleDataPointsSelection: false,
-        filter: { type: "none" },
-      },
+      hover: { filter: { type: "none" } },
+      active: { filter: { type: "none" } },
     },
     noData: {
       text: "No data available",
       align: "center",
       verticalAlign: "middle",
+      offsetX: 0,
+      offsetY: 0,
+      style: {
+        fontSize: "14px",
+        color: "#6B7280",
+      },
     },
     responsive: [
       { breakpoint: 1024, options: { chart: { height: 300 } } },
       { breakpoint: 1366, options: { chart: { height: 320 } } },
     ],
-  };
+  }), [isMobile, series.length, dataPointCount]);
+
+  // Prevent any server-side flash or type error
+
 
   return (
-    <div className="h-[310px] w-full overflow-hidden touch-none -ml-4 -mr-5">
-      <Chart options={options} series={series} type="area" height={310} />
+    <div className="h-[310px] w-full overflow-hidden touch-none -ml-4 -mr-5 md:ml-0 md:mr-0">
+      <Chart
+        options={options}
+        series={series.length > 0 ? series : []}
+        type="area"
+        height={310}
+      />
     </div>
   );
 }

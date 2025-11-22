@@ -44,6 +44,23 @@ export default async function Home({ searchParams }: Props) {
   return (
     <>
 
+              <div className="col-span-12 grid xl:col-span-8 pb-4">
+
+<Suspense fallback={<TopChannelsSkeleton />}>
+            <TopChannels dailyReadings={latestReadings}/>
+          
+          </Suspense>
+
+          </div>
+       
+     
+
+
+
+        <Suspense fallback={null}>
+            <ChatsCard  {...overviewData}/>
+        </Suspense>
+
       <Suspense fallback={<OverviewCardsSkeleton />}>
   <OverviewCardsGroup {...overviewData} />
 </Suspense>
@@ -64,22 +81,7 @@ export default async function Home({ searchParams }: Props) {
 
       
 
-          <div className="col-span-12 grid xl:col-span-8">
 
-<Suspense fallback={<TopChannelsSkeleton />}>
-            <TopChannels dailyReadings={latestReadings}/>
-          
-          </Suspense>
-
-          </div>
-       
-     
-
-
-
-        <Suspense fallback={null}>
-            <ChatsCard  {...overviewData}/>
-        </Suspense>
 
           <ChatbotButton />
       </div>

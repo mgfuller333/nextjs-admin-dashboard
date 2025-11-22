@@ -10,14 +10,10 @@ type KPIProps = {
 };
 
 export async function OverviewCardsGroup({ weekly, latest }: KPIProps) {
-  // These now come directly from props
-  console.log("OverviewCardsGroup - weekly:", weekly);
-  console.log("OverviewCardsGroup - latest:", latest);
-
   const { lastSeen, PowerUsage, co2, aqi } = await getOverviewData(weekly, latest);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
+    <div className="py-6 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
       <OverviewCard
         label="Last Update"
         data={{ ...lastSeen, value: lastSeen.value }}
