@@ -82,7 +82,7 @@ export async function ChatsCard({ weekly, latest }: KPIProps) {
                   {/* Category + Summary */}
                   <div className="mt-1.5 space-y-1.5 text-sm">
                     {/* Category badge */}
-                    <span className="inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-primary dark:bg-primary/20">
+                    <span className="inline-block rounded-full bg-primary/20 px-2.5 py-0.5 text-primary dark:bg-primary/8">
                       {insightCategory}
                     </span>
 
