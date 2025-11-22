@@ -29,7 +29,7 @@ export async function continueTextConversation(messages: any[]) {
       providerOptions: {
         xai: {
           searchParameters: {
-            mode: 'off',
+            mode: 'auto',
           },
         },
       },
@@ -86,7 +86,7 @@ export async function dataNarrative(dailyReadings: any): Promise<string> {
       providerOptions: {
         xai: {
           searchParameters: {
-            mode: 'off', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
+            mode: 'auto', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
             returnCitations: true,
             maxSearchResults: 5,
             sources: [
@@ -123,7 +123,7 @@ export async function generateActionInsight(  weekly: Partial<Record<string, { x
      providerOptions: {
     xai: {
       searchParameters: {
-        mode: 'off', // 'auto', 'on', or 'off'
+        mode: 'auto', // 'auto', 'on', or 'off'
         returnCitations: true,
         maxSearchResults: 5,
          sources: [
