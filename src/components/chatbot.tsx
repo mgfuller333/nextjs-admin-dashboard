@@ -6,7 +6,14 @@ import React, { useState } from 'react';
 import { Fab } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 
-export default function ChatbotButton() {
+type Props = {
+   latestData?: any;
+   weeklyData?: Partial<Record<string, { x: string; y: number }[]>>;
+  // This is exactly what computeWeeklyFromRaw() returns
+  monthlyData?: Partial<Record<string, { x: string; y: number }[]>>;
+};
+
+export default function ChatbotButton({ latestData = {}, weeklyData = {}, monthlyData = {} }: Props) {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const toggleChat = () => setIsChatOpen(v => !v);
@@ -29,7 +36,7 @@ export default function ChatbotButton() {
               bg-background backdrop-blur-sm
             `}
           >
-            <Chat onClose={closeChat} />
+            <Chat onClose={closeChat} latestDataProp={latestData} weeklyDataProp={weeklyData} monthlyDataProp={monthlyData} />
           </div>
         )}
       </div>

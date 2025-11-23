@@ -83,7 +83,7 @@ export default async function Home({ searchParams }: Props) {
 
 
 
-          <ChatbotButton />
+          <ChatbotButton latestData={latestReadings} weeklyData={weeklyAverages} monthlyData={monthlyReadings} />
       </div>
     </>
   );

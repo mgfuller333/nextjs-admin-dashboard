@@ -14,15 +14,18 @@ import { useSensorStore } from '@/services/store';
 
 interface ChatProps {
   onClose: () => void;
+     latestDataProp?: any;
+   weeklyDataProp?: Partial<Record<string, { x: string; y: number }[]>>;
+  // This is exactly what computeWeeklyFromRaw() returns
+  monthlyDataProp?: Partial<Record<string, { x: string; y: number }[]>>;
 }
 
-export default function Chat({ onClose }: ChatProps) {
+export default function Chat({ onClose, latestDataProp = {}, weeklyDataProp = {}, monthlyDataProp = {}  }: ChatProps) {
   const [messages, setMessages] = useState<CoreMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const state = useSensorStore.getState();
-  const { rawData, monthlyAggregates } = state;
+
 
   const systemPrompt = `You are an AI assistant with the wisdom of Darwi Odrade from Dune, monitoring smart city environmental sensors.
 
@@ -30,11 +33,17 @@ Key instructions:
 - Respond concisely under 48 words.
 - Be direct and factual.
 - Use the sensor data below to answer accurately.
+- use the collection collection_4596033a-4422-4a49-b7ba-c24e3eda17c1 for reference
+- please use markdown to optimize UX for readablility
 
 Sensor Data:
-Raw: ${JSON.stringify(rawData, null, 2)}
-Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
+LatestData: ${JSON.stringify(latestDataProp, null, 2)}
+Weekly: ${JSON.stringify(weeklyDataProp, null, 2)}
+Monthly: ${JSON.stringify(monthlyDataProp, null, 2)}
+
   `.trim();
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
