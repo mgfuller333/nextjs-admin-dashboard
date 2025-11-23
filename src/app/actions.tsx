@@ -26,6 +26,7 @@ export async function continueTextConversation(messages: any[]) {
       model: xai('grok-4-fast-reasoning'), // or 'grok-4-fast-reasoning' if you prefer
       messages,
       temperature: 0.6,
+      tools: { file_search: collectionsTool }, // Key: 'file_search' for xAI
       providerOptions: {
         xai: {
           searchParameters: {
@@ -158,4 +159,54 @@ for await (const hero of object) {
   console.log(hero);
 }
 return object
+}
+
+
+
+
+
+export async function getCityDocRef(messages: any[]) {
+// app/api/collection-search/route.ts
+
+  const collectionId = "h";
+  const query = `
+  Please find relevant information to support the users most recent message. 
+  feel free to use prior messages to support finding relevant information.
+  
+  Messages: ${JSON.stringify(messages)};
+  `
+
+  try {
+    const response = await fetch('https://api.x.ai/v1/documents/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        query,
+        source: {
+          collection_ids: [collectionId],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      return 'Search failed';
+    }
+
+    const data = await response.json();
+    
+    // Verification logic: Check if response references the collection
+    const isConnected = data.results?.some((result: any) => 
+      result.collection_id === collectionId
+    ) || data.results?.length >= 0; // Empty results still mean connected
+
+    if(isConnected){
+      return  response
+  }
+} catch (error) {
+    console.error("Error referencing files", error);
+    return "Failed to reference files.";
+  }
 }
