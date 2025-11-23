@@ -79,10 +79,10 @@ export async function TopChannels({
           <span
             className={cn(
               "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
-              channel.status === "Active"
+              channel.status === "ONLINE"
                 ? "bg-green-500/15 text-green-600 dark:bg-green-500/20"
-                : channel.status === "Warning"
-                ? "bg-yellow-500/15 text-yellow-600 dark:bg-yellow-500/20"
+                : channel.status === "other"
+                ? "bg-yellow-500/15 text-red-600 dark:bg-red-500/20"
                 : "bg-red-500/15 text-red-600 dark:bg-red-500/20"
             )}
           >
