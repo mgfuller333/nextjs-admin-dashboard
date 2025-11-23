@@ -23,7 +23,7 @@ const AIR_QUALITY_THRESHOLDS: Record<string, { good: number; moderate: number }>
 
 const getAirQualityRing = (label: string, value: number) => {
   const lowerLabel = label.toLowerCase();
-  let key: keyof typeof AIR_QualityThresholds | null = null;
+  let key: keyof typeof AIR_QUALITY_THRESHOLDS | null = null;
 
   if (lowerLabel.includes("pm2") || lowerLabel.includes("pm 2")) key = "pm2_5";
   if (lowerLabel.includes("iaq") || lowerLabel.includes("air quality")) key = "iaq_2";
