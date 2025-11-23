@@ -98,7 +98,7 @@ Monthly: ${JSON.stringify(monthlyDataProp, null, 2)}
     );
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-96 w-full flex-col">
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/70 backdrop-blur-xl px-5 py-3">
         <h3 className="text-base font-semibold tracking-tight text-black dark:text-white">
@@ -162,7 +162,7 @@ Monthly: ${JSON.stringify(monthlyDataProp, null, 2)}
       </div>
 
       {/* Input */}
-      <div className="shrink-0 border-t border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/70 backdrop-blur-xl px-safe py-4">
+      <div className="shrink-0 border-t border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/70 backdrop-blur-xl px-safe py-1">
         <div className="mx-auto w-full max-w-full px-4 sm:px-6">
           <form onSubmit={handleSubmit} className="flex items-center gap-3">
             <Input

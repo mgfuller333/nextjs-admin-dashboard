@@ -10,11 +10,11 @@ type Props = {
 };
 
 const SENSOR_LABELS = {
-  solP: "Power Generated (W)",
-  batP: "Power Used (W)",
-  iaq_2: "Air Quality (IAQ)",
-  co2_0: "CO₂ (ppm)",
-  pm2_5: "PM2.5 (µg/m³)",
+  solP: "Pwr Gen (W)",
+  batP: "Pwr Use (W)",
+  iaq_2: "IAQ",
+  co2_0: "CO₂",
+  pm2_5: "PM2.5",
 } as const;
 
 export async function WeeksProfit({ className, timeFrame, inputData = {} }: Props) {

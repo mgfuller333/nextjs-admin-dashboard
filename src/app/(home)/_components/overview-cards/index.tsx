@@ -27,7 +27,7 @@ export async function OverviewCardsGroup({ weekly, latest }: KPIProps) {
       />
 
       <OverviewCard
-        label="Power Usage (kWh)"
+        label="Power Use (kWh)"
         data={{ ...PowerUsage, value: compactFormat(PowerUsage.value) }}
         Icon={icons.Profit}
       />

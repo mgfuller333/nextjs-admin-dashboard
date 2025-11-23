@@ -6,12 +6,8 @@ export default function AboutCard() {
   return (
     <div className="max-w-xl mx-auto">
       <Card className="bg-white/90 dark:bg-black/80 backdrop-blur-xl border-black/10 dark:border-white/10 shadow-2xl">
-        <CardHeader>
-          <CardTitle className="text-black dark:text-white text-lg">
-            Odrade AI
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm leading-relaxed space-y-5">
+       
+        <CardContent className="text-sm leading-relaxed py-2 space-y-1">
           <p className="text-black dark:text-white/90">
             Odrade teaches anyone how to respond to environmental and economic impacts of infrastructure—anytime, anywhere.
           </p>

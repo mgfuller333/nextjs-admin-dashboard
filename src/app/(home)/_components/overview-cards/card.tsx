@@ -45,10 +45,10 @@ const formatTimeAgo = (timeStr: string): string => {
   const value = parseInt(match[1], 10);
   const unit = match[2];
 
-  if (unit === "s") return value === 1 ? "just now" : `${value} sec${value > 1 ? "s" : ""} ago`;
-  if (unit === "m") return `${value} min${value > 1 ? "s" : ""} ago`;
-  if (unit === "h") return `${value} hour${value > 1 ? "s" : ""} ago`;
-  if (unit === "d") return `${value} day${value > 1 ? "s" : ""} ago`;
+  if (unit === "s") return value === 1 ? "just now" : `${value} sec${value > 1 ? "s" : ""}`;
+  if (unit === "m") return `${value} min${value > 1 ? "s" : ""}`;
+  if (unit === "h") return `${value} hr${value > 1 ? "s" : ""}`;
+  if (unit === "d") return `${value} day${value > 1 ? "s" : ""}`;
 
   return timeStr;
 };

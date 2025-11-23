@@ -29,7 +29,7 @@ export default function ChatbotButton({ latestData = {}, weeklyData = {}, monthl
               fixed inset-x-0 bottom-20 z-[1300] mx-4 
               sm:inset-x-auto sm:right-4 sm:left-auto sm:mx-0
               max-w-full sm:max-w-lg
-              h-[520px]
+              h-[400px]
               shadow-2xl rounded-2xl
               overflow-hidden
               border border-white/10
