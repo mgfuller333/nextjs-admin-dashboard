@@ -89,16 +89,15 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
     );
 
   return (
-    <div className="flex h-full w-full flex-col bg-background/70 backdrop-blur-xl supports-backdrop-blur:bg-background/60">
+    <div className="flex h-full w-full flex-col">
       {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border/50 bg-background/50 backdrop-blur-xl px-5 py-3">
+      <div className="flex shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/70 backdrop-blur-xl px-5 py-3">
         <h3 className="text-base font-semibold tracking-tight text-black dark:text-white">
           Odrade AI
         </h3>
-
         <button
           onClick={onClose}
-          className="rounded-full p-2 hover:bg-accent/50 transition-colors"
+          className="rounded-full p-2 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           aria-label="Close chat"
         >
           <Close className="h-6 w-6 text-black/70 dark:text-white/70" />
@@ -106,7 +105,7 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-safe pb-safe pt-4">
+      <div className="flex-1 overflow-y-auto px-safe pb-safe pt-4 bg-white/40 dark:bg-black/40 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-full px-4 sm:px-6">
           {messages.length === 0 ? (
             <div className="flex h-full items-center justify-center">
@@ -124,13 +123,14 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
                   <div
                     className={`
                       max-w-[84%] rounded-2xl px-4 py-3 text-sm
-                      bg-background/70 backdrop-blur-md
-                      border border-border/50
-                      text-black dark:text-white shadow-lg
+                      border border-black/10 dark:border-white/10
+                      shadow-lg
                       ${m.role === 'user'
-                        ? 'bg-gradient-to-br from-blue-500/10 to-purple-500/10'
-                        : ''
+                        ? 'bg-gradient-to-br from-blue-500/15 to-purple-500/15 dark:from-blue-400/20 dark:to-purple-400/20'
+                        : 'bg-white/85 dark:bg-black/75'
                       }
+                      backdrop-blur-xl
+                      text-black dark:text-white
                     `}
                   >
                     {renderContent(m.content)}
@@ -140,7 +140,7 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="max-w-[84%] rounded-2xl bg-background/70 backdrop-blur-md border border-border/50 px-4 py-3 text-sm shadow-lg">
+                  <div className="max-w-[84%] rounded-2xl bg-white/85 dark:bg-black/75 backdrop-blur-xl border border-black/10 dark:border-white/10 px-4 py-3 text-sm shadow-lg">
                     <span className="animate-pulse text-black/80 dark:text-white/80">
                       Thinking...
                     </span>
@@ -153,26 +153,27 @@ Monthly: ${JSON.stringify(monthlyAggregates, null, 2)}
       </div>
 
       {/* Input */}
-      <div className="shrink-0 border-t border-border/50 bg-background/50 backdrop-blur-xl px-safe py-4">
+      <div className="shrink-0 border-t border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/70 backdrop-blur-xl px-safe py-4">
         <div className="mx-auto w-full max-w-full px-4 sm:px-6">
           <form onSubmit={handleSubmit} className="flex items-center gap-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about air quality, power, sensors..."
-              className="flex-1 bg-background/70 backdrop-blur-md border-border/70 
+              className="flex-1 bg-white/90 dark:bg-black/70 backdrop-blur-md border-black/20 dark:border-white/20 
                        text-black dark:text-white 
                        placeholder:text-black/60 dark:placeholder:text-white/60
-                       focus-visible:ring-1 focus-visible:ring-ring 
-                       focus-visible:border-ring/50
-                       shadow-md"
+                       focus-visible:ring-2 focus-visible:ring-blue-500/50
+                       shadow-lg"
               disabled={isLoading}
             />
             <Button
               type="submit"
               size="icon"
               disabled={!input.trim() || isLoading}
-              className="rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-border/50 h-11 w-11 shrink-0 backdrop-blur-md shadow-md"
+              className="rounded-full bg-blue-500/20 hover:bg-blue-500/30 dark:bg-blue-400/30 dark:hover:bg-blue-400/40 
+                       text-blue-700 dark:text-blue-300 border border-blue-500/30 dark:border-blue-400/40 
+                       h-11 w-11 shrink-0 backdrop-blur-md shadow-lg"
             >
               <IconArrowUp className="h-5 w-5" />
             </Button>
