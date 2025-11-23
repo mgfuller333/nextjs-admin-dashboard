@@ -59,7 +59,7 @@ export function OverviewCard({ label, data, Icon }: PropsType) {
   const isStatusMode = isStringGrowth && !isTimeString; // e.g. "Offline", "Online"
 
   // Detect if lower values are better
-  
+  //
   const lowerIsBetter =
     label.toLowerCase().includes("co2") ||
     label.toLowerCase().includes("iaq") ||
