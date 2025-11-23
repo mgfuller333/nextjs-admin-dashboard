@@ -62,6 +62,9 @@ Monthly: ${JSON.stringify(monthlyDataProp, null, 2)}
         ...messages,
         userMessage,
       ]);
+
+      console.log("messages",messages)
+       console.log("reply",reply)
       setMessages([...newMessages, { role: 'assistant', content: reply }]);
     } catch {
       setMessages([...newMessages, { role: 'assistant', content: 'Error.' }]);
@@ -142,6 +145,7 @@ Monthly: ${JSON.stringify(monthlyDataProp, null, 2)}
                       text-black dark:text-white
                     `}
                   >
+                    
                     {renderContent(m.content)}
                   </div>
                 </div>

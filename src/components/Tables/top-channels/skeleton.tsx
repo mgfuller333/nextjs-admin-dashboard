@@ -12,17 +12,17 @@ export function TopChannelsSkeleton() {
   return (
     <div className=" bg-white px-7.5 pb-4 pt-1 shadow-1 dark:bg-gray-dark dark:shadow-card">
       <h2 className="mb-1 text-body-2xlg font-bold text-dark dark:text-white">
-        Top Channels
+        ALERTS
       </h2>
 
       <Table>
         <TableHeader>
           <TableRow className="border-none uppercase [&>th]:text-center">
-            <TableHead className="!text-left">Source</TableHead>
-            <TableHead>Visitors</TableHead>
-            <TableHead className="!text-right">Revenues</TableHead>
-            <TableHead>Sales</TableHead>
-            <TableHead>Conversion</TableHead>
+            <TableHead className="!text-left">SOURCE</TableHead>
+            <TableHead>STATUS</TableHead>
+            <TableHead className="!text-right">SUMMARY</TableHead>
+            <TableHead>LOCATION</TableHead>
+            
           </TableRow>
         </TableHeader>
 
