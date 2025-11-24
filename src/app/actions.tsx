@@ -85,7 +85,7 @@ export async function continueTextConversation(messages: any[]) {
        const { text } = await generateText({
        model: xai_keyed('grok-4-fast-reasoning'),
       
-        prompt: `${last_message}. Respond as a useful human assistant and concisely under 50 words. Dont include word count in response. 
+        prompt: `${last_message}. Respond as a useful human assistant and concisely under 48 words. Dont include word count in response. 
         
 
         Please use this as reference information on the previous conversation that also includes sensor data ${conversation}
