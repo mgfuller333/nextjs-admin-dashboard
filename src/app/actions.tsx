@@ -38,6 +38,7 @@ export async function continueTextConversation(messages: any[]) {
       description: 'Search city budget/finance documents from the Coral Gables collection to find relevant information based on the users query',
       inputSchema: z.object({
     query: z.string(last_message),
+
   }),
   execute: async ({ query }) => {
     const collectionId = "collection_4596033a-4422-4a49-b7ba-c24e3eda17c1";
@@ -52,7 +53,7 @@ export async function continueTextConversation(messages: any[]) {
         body: JSON.stringify({
           query,
           source: { collection_ids: [collectionId] },
-          max_results: 4,
+          max_results: 10,
           chunk_size: 1024,
         }),
       });
@@ -76,13 +77,20 @@ export async function continueTextConversation(messages: any[]) {
         .join('\n\n');
 
         console.log("context",context)
-  console.log("last_message",last_message)
+        console.log("last_message",last_message)
+        console.log("last_message",conversation)
  
+
 
        const { text } = await generateText({
        model: xai_keyed('grok-4-fast-reasoning'),
       
-        prompt: `${last_message}. Respond as a useful human assistant and concisely under 48 words. Dont include word count in response. Please use this as context: ${context}`,
+        prompt: `${last_message}. Respond as a useful human assistant and concisely under 50 words. Dont include word count in response. 
+        
+
+        Please use this as reference information on the previous conversation that also includes sensor data ${conversation}
+        Please use this as reference information for city planning documentation: ${context}
+        `,
       });
 
         console.log("text",text)
@@ -97,6 +105,7 @@ export async function continueTextConversation(messages: any[]) {
 })
       },
       toolChoice: 'auto',
+      stopWhen: stepCountIs(5),
       providerOptions: {
         xai: {
           searchParameters: {
@@ -118,14 +127,12 @@ export async function continueTextConversation(messages: any[]) {
       console.log('Grok called getCityDocRef tool — feeding back results', toolResults);
         console.log("text",toolResults[0].output)
 
+       const lastToolResult = toolResults[toolResults.length - 1];
 
-      // // 1. Assistant message with tool call
-      // conversation.push({
-      //   role: 'assistant',
-      //   content: String(toolResults[0].output) || null,
-      // });
 
-      return String(toolResults[0].output) || "please try again"
+      
+
+      return String(lastToolResult.output) || "please try again"
       
     } else {
       // Final answer — no more tools
