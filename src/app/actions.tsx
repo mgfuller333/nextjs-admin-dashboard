@@ -52,7 +52,7 @@ export async function continueTextConversation(messages: any[]) {
         body: JSON.stringify({
           query,
           source: { collection_ids: [collectionId] },
-          max_results:4,
+          max_results:6,
           chunk_size: 1024,
         }),
       });
@@ -85,6 +85,29 @@ export async function continueTextConversation(messages: any[]) {
        model: xai_keyed('grok-4-fast-reasoning'),
       
         prompt: `${last_message}. Respond as a useful human assistant and concisely under 48 words. Dont include word count in response. 
+
+               Please note that the key in the sensor data are abreviated for actual data
+
+       iaq_n	Indoor Air Quality index (0-7 for each BME688 sensor)
+iaqAcc_n	IAQ accuracy (0-3) for sensor n
+co2_n	Estimated CO₂ (ppm) - sensor n
+bvoc_n	Breath VOC equivalent (ppm) - sensor n
+gasR_n	Gas resistance (Ω) - sensor n
+temp_n	Temperature (°C) - sensor n
+hum_n	Relative humidity (%) - sensor n
+pres_n	Atmospheric pressure (hPa) - sensor n
+pm1	Particulate Matter ≤1.0 µm (µg/m³)
+pm2_5	Particulate Matter ≤2.5 µm (µg/m³)
+pm10	Particulate Matter ≤10 µm (µg/m³)
+batV	Battery voltage (V)
+batP	Battery percentage (%)
+batC	Battery charging current (mA)
+solV / solP	Solar panel voltage and power
+loc	Latitude/Longitude (from GNSS)
+alt	Altitude (m)
+satCnt	Number of satellites in fix
+ts	Timestamp of reading
+device / bID	Device identifier
         
 
         Please use this as reference information on the previous conversation that also includes sensor data ${conversation}
@@ -220,6 +243,29 @@ export async function generateActionInsight(
      Please note all power is in Watts and batP is energy used by sensor. solP is energy generated. 
     the battery is a sodium ion 31wH Sodium Ion Battery 33140 3.1V 10Ah 31Wh (12C) Cylindrical Battery
 
+           Please note that the key in the sensor data are abreviated for actual data
+
+       iaq_n	Indoor Air Quality index (0-7 for each BME688 sensor)
+iaqAcc_n	IAQ accuracy (0-3) for sensor n
+co2_n	Estimated CO₂ (ppm) - sensor n
+bvoc_n	Breath VOC equivalent (ppm) - sensor n
+gasR_n	Gas resistance (Ω) - sensor n
+temp_n	Temperature (°C) - sensor n
+hum_n	Relative humidity (%) - sensor n
+pres_n	Atmospheric pressure (hPa) - sensor n
+pm1	Particulate Matter ≤1.0 µm (µg/m³)
+pm2_5	Particulate Matter ≤2.5 µm (µg/m³)
+pm10	Particulate Matter ≤10 µm (µg/m³)
+batV	Battery voltage (V)
+batP	Battery percentage (%)
+batC	Battery charging current (mA)
+solV / solP	Solar panel voltage and power
+loc	Latitude/Longitude (from GNSS)
+alt	Altitude (m)
+satCnt	Number of satellites in fix
+ts	Timestamp of reading
+device / bID	Device identifier
+
       Weekly Sensor Data : ${weeklyString},
 
       Latest Sensor Data: ${latestString}`;
@@ -247,7 +293,7 @@ export async function generateActionInsight(
               body: JSON.stringify({
                 query: inputQuery, // ← 3. Use the query Grok sent, not inputQuery
                 source: { collection_ids: [collectionId] },
-                max_results: 4,
+                max_results: 6,
                 chunk_size: 1024,
               }),
             });
@@ -294,31 +340,120 @@ export async function generateActionInsight(
   if (allDocumentContext) {
     console.log('Grok called tool — using retrieved context');
 
-    const { object } = await generateObject({
-      model: xai_keyed('grok-4-fast-reasoning'),
-      output: 'array',
-      schema: z.object({
-        inisghtObj: z.object({
-          insightName: z.string().describe('Sensor metric providing insight. It should be readable so provide a space inbetween 2 words if necessary'),
-          insightCategory: z.string().describe('Category of the insight based on NIST Smart City Framework up . Please respond up to 2 word'),
-          insightSummary: z.string().describe('Please provide a summary and justify with data. Response should be of length 150 characters or less.'),
-        }),
-      }),
-      prompt: `Generate 3-5 actionable insight objects for a municipal planning team to make to
-       improve sustainability, environment, economy, and socioeconomic status of the community.
+const { object } = await generateObject({
+  model: xai_keyed("grok-4-fast-reasoning"),
+  output: "array",
+  schema: z.object({
+    inisghtObj: z.object({
+      insightName: z
+        .string()
+        .describe(
+          "A concise, human-readable title describing the insight. Must be 2–4 words, no abbreviations."
+        ),
+      insightCategory: z
+        .string()
+        .describe(
+          "A category derived from the NIST Smart City Framework (e.g., 'Environmental Quality', 'Energy Efficiency'). Must be 1–2 words."
+        ),
+      insightSummary: z
+        .string()
+        .describe(
+          "A short actionable summary (≤150 characters) justified by sensor data and municipal planning context."
+        ),
+    }),
+  }),
 
-       Please reference the iot sensor data:
+  prompt: `
+You are an AI system generating actionable smart city insights for municipal planning teams.  
+Your outputs must follow the NIST Smart City Framework and be credible, data-driven, and operationally useful.
 
-        Please note all power is in Watts and batP is energy used by sensor. solP is energy generated. 
-        the battery is a sodium ion 31wH Sodium Ion Battery 33140 3.1V 10Ah 31Wh (12C) Cylindrical Battery
+---
+### 🎯 Your Task
+Generate 3–5 concise and actionable insight objects that help improve:
+- Sustainability  
+- Environmental health  
+- Economic development  
+- Socioeconomic well-being  
+- Infrastructure resilience  
 
-          Weekly Sensor Data : ${weeklyString},
+---
+### 📘 Required Data Sources
+Every insight must reference both
+1. IoT sensor data  
+2. Municipal planning documents  
 
-          Latest Sensor Data: ${latestString}
-       
-       Please use this as context from various documentation from municipal planning documents: ${allDocumentContext}
-      `,
-    });
+
+Please use human sentiment from X.com if applicable
+
+Do not use acronymss and do not show character count
+
+You must justify each insight using specific sensor signals and relevant planning context.
+
+---
+### 📡 Sensor Data (DO NOT USE abbreviations in the output)
+Indoor Air Quality index  
+IAQ accuracy  
+Estimated Carbon Dioxide (ppm)  
+Breath Volatile Organic Compounds (ppm)  
+Gas resistance (ohms)  
+Temperature (°C)  
+Relative humidity (%)  
+Atmospheric pressure (hPa)  
+Particulate Matter ≤1.0µm  
+Particulate Matter ≤2.5µm  
+Particulate Matter ≤10µm  
+Battery voltage (V)  
+Battery percentage (%)  
+Battery charging current (mA)  
+Solar panel voltage (V)  
+Solar panel power (mW)  
+GNSS latitude and longitude  
+Altitude (m)  
+Number of satellites  
+Timestamp  
+Device identifier  
+
+Energy note:
+All power values are in milliwatts. The sensor uses a 31 Wh sodium-ion battery powering an ESP32 and Monarch2 GNSS.
+
+---
+### 🗓 Sensor Readings Provided
+Weekly sensor data (data is in month and week number. Please refer to the week number of the month when referencing this data in the response):  
+${weeklyString}
+
+Latest sensor reading:  
+${latestString}
+
+---
+### 📄 Municipal Planning Context
+${allDocumentContext}
+
+---
+### 🧠 Insight Requirements
+Each insight must be:
+- Credible (reference specific sensor readings + planning context)  
+- Actionable (recommend a measurable next step)  
+- Clear and concise  
+- ≤150 characters for insightSummary  
+- Strictly aligned with NIST categories  
+
+---
+### 📦 Output Format
+Return ONLY objects following this exact schema:
+
+{
+  inisghtObj: {
+    insightName: string,
+    insightCategory: string,
+    insightSummary: string
+  }
+}
+
+Do NOT include reasoning or commentary. Also please note d
+  `,
+});
+
+
 
     // This will now work because docContext has real content
     for await (const hero of object) {

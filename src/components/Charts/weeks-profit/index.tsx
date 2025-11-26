@@ -10,8 +10,8 @@ type Props = {
 };
 
 const SENSOR_LABELS = {
-  solP: "Pwr Gen (W)",
-  batP: "Pwr Use (W)",
+  solP: "Pwr Gen (mW)",
+  batP: "Pwr Use (mW)",
   iaq_2: "IAQ",
   co2_0: "CO₂",
   pm2_5: "PM2.5",
