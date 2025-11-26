@@ -1,19 +1,17 @@
 // app/page.tsx
 import { Suspense } from 'react';
-import { createTimeFrameExtractor } from '@/utils/timeframe-extractor';
 import PaymentsOverview from '@/components/Charts/payments-overview';
 import { OverviewCardsGroup } from './_components/overview-cards';
 import { OverviewCardsSkeleton } from './_components/overview-cards/skeleton';
 import { ChatsCard } from './_components/chats-card';
 import { TopChannels } from '@/components/Tables/top-channels';
 import { TopChannelsSkeleton } from '@/components/Tables/top-channels/skeleton';
-import { getWeeklyData } from '@/services/charts.services';
+import { getRawData } from '@/services/charts.services';
 import type { SensorKey, SensorPoint } from '@/types/sensor';
 import ChatbotButton from '@/components/chatbot';
 import { WeeksProfit } from '@/components/Charts/weeks-profit';
 
 const initialKeys: SensorKey[] = ['solP', 'batP', 'pm2_5', 'iaq_2', 'co2_0'] as const;
-
 type Props = {
   searchParams: Promise<{
     selected_time_frame?: string;
@@ -21,12 +19,12 @@ type Props = {
   }>;
 };
 
+
 export default async function Home({ searchParams }: Props) {
   const params = await searchParams;
-  createTimeFrameExtractor(params.selected_time_frame); // keep if you use it elsewhere
 
   // 1. One server fetch – raw points for all sensors
-  const rawPayload = await getWeeklyData(undefined, initialKeys);
+  const rawPayload = await getRawData(initialKeys);
 
   // 2. Server-side aggregation
   const weeklyAverages = computeWeeklyFromRaw(rawPayload, initialKeys);
@@ -34,12 +32,15 @@ export default async function Home({ searchParams }: Props) {
   const monthlyReadings = computeMonthlyFromRaw(rawPayload, initialKeys);
 
   console.log('Weekly Averages:', weeklyAverages);
+  console.log('Latest Readings:', latestReadings);
+  console.log('Monthly Readings:', monthlyReadings);
+
 
  const overviewData = {
   weekly: weeklyAverages,
   latest: latestReadings,
 };
-  console.log('Overview Data:', overviewData);
+ // console.log('Overview Data:', overviewData);
 
   return (
     <>

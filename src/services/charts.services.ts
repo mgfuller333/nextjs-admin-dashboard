@@ -98,12 +98,10 @@ export function getWeeklyRMSFromStore(
 
 
 // Async funcs (fetch if not cached)
-export async function getWeeklyData(
-  timeFrame?: 'monthly' | 'yearly' | string,
-  keys: string[] = ['iaq_2'],
-  useCache: boolean = true // true: check/update store; false: pure fetch
+export async function getRawData(
+  inputkeys: string[] = ['solV', 'batV', 'pm2_5', 'iaq_2'],
 ): Promise<Partial<Record<SensorKey, SensorPoint[]>>> {
-  const validatedKeys = validateKeys(keys);
+  const validatedKeys = validateKeys(inputkeys);
   if (validatedKeys.length === 0) return {};
 
   // Fetch
@@ -111,9 +109,16 @@ export async function getWeeklyData(
   const params = new URLSearchParams();
   validatedKeys.forEach(key => params.append('keys', key));
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/weeklyData?${params.toString()}`);
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/rawData`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ keys: inputkeys })
+});
+
+//  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/weeklyData?${params.toString()}`);
   if (!res.ok) throw new Error(`API error: ${res.statusText}`);
   const payload = await res.json();
+
 
 
   return validatedKeys.reduce((acc, key) => {
@@ -122,170 +127,4 @@ export async function getWeeklyData(
   }, {} as Partial<Record<SensorKey, SensorPoint[]>>);
 }
 
-export async function getOldSensorData(
-  timeFrame: 'monthly' | 'yearly' | string = 'monthly',
-  keys: string[] = ['solV', 'batV', 'co2_2','batP', 'solP', 'iaq_2'],
-  useCache: boolean = true
-): Promise<Partial<Record<SensorKey, SensorPoint[]>>> {
-  const validatedKeys = validateKeys(keys);
-  if (validatedKeys.length === 0) return {};
 
-  const cacheKey = getCacheKey('monthly', timeFrame);
-
-  // Cache check
-  if (useCache) {
-    const state = useSensorStore.getState();
-    const cached = validatedKeys.reduce((acc, key) => {
-      acc[key] = state.monthlyAggregates?.[key] || [];
-      return acc;
-    }, {} as Partial<Record<SensorKey, SensorPoint[]>>);
-
-    if (validatedKeys.every(key => (cached[key]?.length ?? 0) > 0)) {
-      console.log('Returning cached monthly');
-      return cached;
-    }
-  }
-
-  // Fetch raw
-  const rawData = await getWeeklyData(timeFrame, validatedKeys, useCache);
-
-  //console.log("rawData for monthly aggregation:", rawData);
-
-  // Compute monthly (unchanged)
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthlyData: Record<string, number[]> = {};
-
-  validatedKeys.forEach(key => {
-    months.forEach(month => {
-      monthlyData[`${key}_${month}`] = [];
-    });
-  });
-
-  validatedKeys.forEach(key => {
-    const points = rawData[key] || [];
-    points.forEach(p => {
-      const date = new Date(p.x);
-      const monthName = months[date.getMonth()];
-      monthlyData[`${key}_${monthName}`].push(p.y);
-    });
-  });
-
-  const result: Partial<Record<SensorKey, SensorPoint[]>> = {};
-  validatedKeys.forEach(key => {
-    result[key] = months.map(month => {
-      const values = monthlyData[`${key}_${month}`] || [];
-      const avg = values.length > 0
-        ? values.reduce((a, b) => a + b, 0) / values.length
-        : 0;
-      return { x: month, y: Number(avg.toFixed(2)) };
-    });
-  });
-
-  //console.log('Monthly Aggregated Data:', result);
-
-  // Cache update
-  if (useCache) {
-    const state = useSensorStore.getState();
-    validatedKeys.forEach(key => {
-      state.updateMonthlyAggregates(key, result[key] || []);
-    });
-  }
-
-  return result;
-}
-
-export async function getWeeksProfitData(
-  timeFrame: string = 'last week',
-  keys: string[] = ['iaq_2', 'co2_0','solP', 'batP', 'solV', 'batV','pm2_5']
-): Promise<{ x: string; y: number }[]> {
-  const validatedKeys = validateKeys(keys);
-  if (validatedKeys.length === 0) return [];
-
-  const AQIThreshold = -1; // Low to include all (adjust >0 to skip low-variance)
-  const POWER_KEYS = new Set(['solP', 'batP', 'solV', 'batV','iaq_2','co2_0','pm2_5']); // Skip threshold for power (steady data OK)
-
-  // Compute start/end based on timeFrame
-  const now = new Date();
-  let start: string | undefined;
-  let end: string | undefined;
-  if (timeFrame === 'last 24 hours') {
-    const dayAgo = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
-    start = dayAgo.toISOString();
-    end = now.toISOString();
-  } else if (timeFrame === 'last week') {
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    start = weekAgo.toISOString();
-    end = now.toISOString();
-  }
-  // Extend for 'last month', etc. (defaults to API fallback if unset)
-
-  // Build params
-  const params = new URLSearchParams();
-  validatedKeys.forEach(key => params.append('keys', key));
-  if (start) params.set('start', start);
-  if (end) params.set('end', end);
-
-  // Fetch
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/data?${params.toString()}`);
-  if (!res.ok) {
-    console.error('API fetch failed:', res.statusText);
-    return [];
-  }
-  const data = await res.json(); // { iaq_2: [{x: ts, y: val}, ...], ... }
-  console.log('Raw results:', data);
-
-  // Compute per-sensor RMS
-  const results: { x: string; y: number }[] = [];
-  for (const key of validatedKeys) {
-    const points = data[key as SensorKey] || []; // Safe access
-    if (points.length === 0) continue;
-
-    // Overall RMS for threshold (across all points)
-    const sumOfSquares = points.reduce((sum: number, point: SensorPoint) => sum + (point.y * point.y), 0);
-    const meanOfSquares = sumOfSquares / points.length;
-    const overallRms = Math.sqrt(meanOfSquares);
-
-    // Skip threshold only for non-power (AQI-like)
-    if (!POWER_KEYS.has(key) && overallRms <= AQIThreshold) {
-      console.log(`Skipping ${key} (RMS ${overallRms.toFixed(3)} ≤ threshold)`);
-      continue;
-    }
-
-    // Group by day, top 20 max y per day for daily RMS
-    const dailyData = new Map<string, number[]>();
-    points.forEach((point: SensorPoint) => {
-      const date = new Date(point.x);
-      const day = date.toISOString().split('T')[0]; // YYYY-MM-DD
-      if (!dailyData.has(day)) dailyData.set(day, []);
-      dailyData.get(day)!.push(point.y);
-    });
-
-    const dailyRmsValues: number[] = [];
-    dailyData.forEach((ys) => {
-      const top20 = [...ys].sort((a, b) => b - a).slice(0, 20); // Descending, top 20
-      if (top20.length === 0) return;
-      const sumSq = top20.reduce((s, v) => s + v * v, 0);
-      const meanSq = sumSq / top20.length;
-      const dayRms = Math.sqrt(meanSq);
-      dailyRmsValues.push(Number(dayRms.toFixed(3)));
-    });
-
-    if (dailyRmsValues.length === 0) continue;
-
-    // Average daily RMS for this sensor
-    const avgRms = dailyRmsValues.reduce((sum, val) => sum + val, 0) / dailyRmsValues.length;
-
-    results.push({
-      x: key, // Raw key (component maps to readable)
-      y: Number(avgRms.toFixed(3)),
-    });
-  }
-
-  // Sort by key (alphabetical for chart)
-  results.sort((a, b) => a.x.localeCompare(b.x));
-
-  console.log('Computed RMS data:', results);
-  return results;
-}
-
-// ... (fake funcs like getPaymentsOverviewData unchanged)

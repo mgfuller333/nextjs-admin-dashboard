@@ -15,6 +15,8 @@ type PropsType = {
 export function SensorTimeChart({ data }: PropsType) {
   const isMobile = useIsMobile();
 
+  
+
   const series = Object.entries(data).map(([name, points]) => ({
     name,
     data: points,

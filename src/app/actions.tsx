@@ -6,7 +6,6 @@ import { xai, createXai } from '@ai-sdk/xai';
 import { generateText, tool } from 'ai';
 import { ReactNode } from 'react';
 import { z } from 'zod';
-import { getOldSensorData } from '@/services/charts.services';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -53,7 +52,7 @@ export async function continueTextConversation(messages: any[]) {
         body: JSON.stringify({
           query,
           source: { collection_ids: [collectionId] },
-          max_results: 10,
+          max_results:4,
           chunk_size: 1024,
         }),
       });
@@ -119,9 +118,6 @@ export async function continueTextConversation(messages: any[]) {
     });
 
     const { text, toolResults } = result;
-
- 
-
     // If Grok used the tool
     if (toolResults && toolResults.length > 0) {
       console.log('Grok called getCityDocRef tool — feeding back results', toolResults);
@@ -210,52 +206,129 @@ type KPIProps = {
   weekly: Partial<Record<string, { x: string; y: number }[]>>;
   latest: Partial<Record<string, { x: string; y: number }>>;
 };
-export async function generateActionInsight(  weekly: Partial<Record<string, { x: string; y: number }[]>>,
-  latest: Partial<Record<string, { x: string; y: number }>>) {
+export async function generateActionInsight(  
+  weekly: Partial<Record<string, { x: string; y: number }[]>>,
+  latest: Partial<Record<string, { x: string; y: number }>>,
+) {
+  const weeklyString = JSON.stringify(weekly, null, 2);
+  const latestString = JSON.stringify(latest, null, 2);
 
+  let docContext = ""; // ← 1. Initialize outside so we can capture it
 
-//console.log("Old Sensor Data for Narrative:", data);
-  const { object } = await generateObject({
-  model: xai_keyed('grok-4-fast-reasoning'),
-  output: 'array',
-     providerOptions: {
-    xai: {
-      searchParameters: {
-        mode: 'auto', // 'auto', 'on', or 'off'
-        returnCitations: true,
-        maxSearchResults: 5,
-         sources: [
-          {
-            type: 'web',
-          
-          },
-          {
-            type: 'news',
-            country: 'US',
-          },
-          {
-            type: 'x',
-           
-          },
-        ],
-      },
+  const inputQuery = `Please find relevant information from files in the collection that allows me to understand how the environment, economy, and community is impacted by this sensor data.
+  
+     Please note all power is in Watts and batP is energy used by sensor. solP is energy generated. 
+    the battery is a sodium ion 31wH Sodium Ion Battery 33140 3.1V 10Ah 31Wh (12C) Cylindrical Battery
+
+      Weekly Sensor Data : ${weeklyString},
+
+      Latest Sensor Data: ${latestString}`;
+
+  const result = await generateText({
+    model: xai('grok-4-fast-reasoning'),
+    prompt: inputQuery,
+    temperature: 0.6,
+    tools: { 
+      getCityActionDocRefTool: tool({
+        description: `Search city budget/finance documents from the Coral Gables collection to find relevant information based on the users query`,
+        inputSchema: z.object({
+          query: z.string(),
+        }),
+        execute: async ({ query }) => { // ← 2. Accept { query } from Grok
+          const collectionId = "collection_4596033a-4422-4a49-b7ba-c24e3eda17c1";
+
+          try {
+            const response = await fetch('https://api.x.ai/v1/documents/search', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+              },
+              body: JSON.stringify({
+                query: inputQuery, // ← 3. Use the query Grok sent, not inputQuery
+                source: { collection_ids: [collectionId] },
+                max_results: 4,
+                chunk_size: 1024,
+              }),
+            });
+
+            if (!response.ok) {
+              const err = await response.json().catch(() => ({}));
+              return `Error: Search failed — ${err.message || response.status}`;
+            }
+
+            const data = await response.json();
+
+            if (!data.matches?.length) {
+              return "No relevant documents found in the collection.";
+            }
+
+            const context = data.matches
+              .map((match: any, i: number) => 
+                `--- Reference ${i + 1} (Score: ${match.score.toFixed(3)}) ---\n${match.chunk_content.trim()}`
+              )
+              .join('\n\n');
+
+            docContext = context; // ← 4. Assign to outer variable (this works in JS!)
+            console.log("action insights context", docContext);
+
+            return context; // ← Return it so Grok sees it too
+
+          } catch (error: any) {
+            return `Error: Failed to search documents — ${error.message}`;
+          }
+        }
+      })
     },
-  },
-  schema: z.object({
-    inisghtObj: z.object({
-      insightName: z.string().describe('Sensor metric providing insight. It should be readable so provide a space inbetween 2 words if necessary'),
-      insightCategory: z.string().describe('Category of the insight based on NIST Smart City Framework up . Please respond up to 2 word'),
-      insightSummary: z.string().describe('Please provide a summary and justify with data. Response should be of length 150 characters or less.'),
-    }),
-  }),
-  prompt: 'Generate 3 actionable insight objects for a municipal planning team to make to improve sustainability based on strategic city plan in the XAI collection. Please note all power is in Watts and batP is energy used by sensor. solP is energy generated. the battery is a sodium ion 31wH Sodium Ion Battery 33140 3.1V 10Ah 31Wh (12C) Cylindrical Battery ' + 'weekly Data' + JSON.stringify(weekly) + ' and latest data ' + JSON.stringify(latest),
+    toolChoice: 'auto',
+    stopWhen: stepCountIs(5),
+  });
 
-});
+  const { text, toolResults } = result;
 
-for await (const hero of object) {
-  console.log(hero);
-}
-return object
+  console.log("tool result", result.steps);
+  const allDocumentContext = result.steps.flatMap(s => s.content).filter(c => c.type === 'tool-result').map(c => c.output).join('\n\n');
+  console.log(allDocumentContext)
+
+  // If tool was used, proceed with structured output
+  if (allDocumentContext) {
+    console.log('Grok called tool — using retrieved context');
+
+    const { object } = await generateObject({
+      model: xai_keyed('grok-4-fast-reasoning'),
+      output: 'array',
+      schema: z.object({
+        inisghtObj: z.object({
+          insightName: z.string().describe('Sensor metric providing insight. It should be readable so provide a space inbetween 2 words if necessary'),
+          insightCategory: z.string().describe('Category of the insight based on NIST Smart City Framework up . Please respond up to 2 word'),
+          insightSummary: z.string().describe('Please provide a summary and justify with data. Response should be of length 150 characters or less.'),
+        }),
+      }),
+      prompt: `Generate 3-5 actionable insight objects for a municipal planning team to make to
+       improve sustainability, environment, economy, and socioeconomic status of the community.
+
+       Please reference the iot sensor data:
+
+        Please note all power is in Watts and batP is energy used by sensor. solP is energy generated. 
+        the battery is a sodium ion 31wH Sodium Ion Battery 33140 3.1V 10Ah 31Wh (12C) Cylindrical Battery
+
+          Weekly Sensor Data : ${weeklyString},
+
+          Latest Sensor Data: ${latestString}
+       
+       Please use this as context from various documentation from municipal planning documents: ${allDocumentContext}
+      `,
+    });
+
+    // This will now work because docContext has real content
+    for await (const hero of object) {
+      console.log(hero);
+    }
+    return object;
+
+  } else {
+    return [];
+  }
 }
 
 
