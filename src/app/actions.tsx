@@ -25,7 +25,7 @@ export async function continueTextConversation(messages: any[]) {
   let conversation = [...messages];
   let last_message = conversation.at(-1);
 
-  console.log("conversation",conversation)
+  // console.log("conversation",conversation)
 
     const result = await generateText({
       model: xai('grok-4-fast-reasoning'),
@@ -75,9 +75,9 @@ export async function continueTextConversation(messages: any[]) {
         )
         .join('\n\n');
 
-        console.log("context",context)
-        console.log("last_message",last_message)
-        console.log("last_message",conversation)
+        // console.log("context",context)
+        // console.log("last_message",last_message)
+        // console.log("last_message",conversation)
  
 
 
@@ -115,7 +115,7 @@ device / bID	Device identifier
         `,
       });
 
-        console.log("text",text)
+        // console.log("text",text)
 
       return text; // ← Plain string! Grok loves this
 
@@ -143,8 +143,8 @@ device / bID	Device identifier
     const { text, toolResults } = result;
     // If Grok used the tool
     if (toolResults && toolResults.length > 0) {
-      console.log('Grok called getCityDocRef tool — feeding back results', toolResults);
-        console.log("text",toolResults[0].output)
+      // console.log('Grok called getCityDocRef tool — feeding back results', toolResults);
+      //   console.log("text",toolResults[0].output)
 
        const lastToolResult = toolResults[toolResults.length - 1];
 
@@ -217,10 +217,10 @@ export async function dataNarrative(dailyReadings: any): Promise<string> {
       prompt: `Provide a concise 5-word summary of the following data: ${JSON.stringify(dailyReadings)}`,
     });
 
-    console.log("Data Narrative Text:", text);
+    // console.log("Data Narrative Text:", text);
     return text || "No summary generated.";
   } catch (error) {
-    console.error("Error generating data narrative:", error);
+    // console.error("Error generating data narrative:", error);
     return "Failed to generate summary.";
   }
 }
@@ -316,7 +316,7 @@ device / bID	Device identifier
               .join('\n\n');
 
             docContext = context; // ← 4. Assign to outer variable (this works in JS!)
-            console.log("action insights context", docContext);
+            // console.log("action insights context", docContext);
 
             return context; // ← Return it so Grok sees it too
 
@@ -332,13 +332,13 @@ device / bID	Device identifier
 
   const { text, toolResults } = result;
 
-  console.log("tool result", result.steps);
+  // console.log("tool result", result.steps);
   const allDocumentContext = result.steps.flatMap(s => s.content).filter(c => c.type === 'tool-result').map(c => c.output).join('\n\n');
-  console.log(allDocumentContext)
+  // console.log(allDocumentContext)
 
   // If tool was used, proceed with structured output
   if (allDocumentContext) {
-    console.log('Grok called tool — using retrieved context');
+    // console.log('Grok called tool — using retrieved context');
 
 const { object } = await generateObject({
   model: xai_keyed("grok-4-fast-reasoning"),
@@ -358,13 +358,17 @@ const { object } = await generateObject({
       insightSummary: z
         .string()
         .describe(
-          "A short actionable summary (≤150 characters) justified by sensor data and municipal planning context."
+          "A short actionable summary (≤125 characters) justified by sensor data and municipal planning context."
         ),
     }),
   }),
 
   prompt: `
 You are an AI system generating actionable smart city insights for municipal planning teams.  
+
+Please provide insights for those that might not be literate in the city planning documentation so providing very clear actionable insights such as plant trees, or investigate carbon emmissions, or optimize solar power. like very specific actions people can take
+
+
 Your outputs must follow the NIST Smart City Framework and be credible, data-driven, and operationally useful.
 
 ---
@@ -390,7 +394,7 @@ Do not use acronymss and do not show character count
 You must justify each insight using specific sensor signals and relevant planning context.
 
 ---
-### 📡 Sensor Data (DO NOT USE abbreviations in the output)
+### 📡 Sensor Data (No acronyms, please use numbers rather than spelling the word for a number out. For example please use 4 instead of four)
 Indoor Air Quality index  
 IAQ accuracy  
 Estimated Carbon Dioxide (ppm)  
@@ -418,7 +422,7 @@ All power values are in milliwatts. The sensor uses a 31 Wh sodium-ion battery p
 
 ---
 ### 🗓 Sensor Readings Provided
-Weekly sensor data (data is in month and week number. Please refer to the week number of the month when referencing this data in the response):  
+Weekly sensor data  
 ${weeklyString}
 
 Latest sensor reading:  
@@ -430,12 +434,13 @@ ${allDocumentContext}
 
 ---
 ### 🧠 Insight Requirements
-Each insight must be:
-- Credible (reference specific sensor readings + planning context)  
-- Actionable (recommend a measurable next step)  
+Each insight must be: 
+- Actionable step for any stake holder including a resident, city planner, emergency response, financial planner, by those that might not be familiar with smart city documentation (recommend a measurable next step)  
 - Clear and concise  
-- ≤150 characters for insightSummary  
-- Strictly aligned with NIST categories  
+- ≤150 characters for insightSummary 
+- No Acronyms
+- use numebrs instead of the spelling out the word. For example use "4" not "four"
+- provide a small reference to the municiapl planning context to add credibility
 
 ---
 ### 📦 Output Format
@@ -449,7 +454,7 @@ Return ONLY objects following this exact schema:
   }
 }
 
-Do NOT include reasoning or commentary. Also please note d
+Do NOT include reasoning or commentary. 
   `,
 });
 
@@ -457,7 +462,7 @@ Do NOT include reasoning or commentary. Also please note d
 
     // This will now work because docContext has real content
     for await (const hero of object) {
-      console.log(hero);
+      // console.log(hero);
     }
     return object;
 
