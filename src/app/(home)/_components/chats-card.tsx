@@ -53,7 +53,7 @@ function getIcon(profileKey: string): ReactNode {
 
 export async function ChatsCard({ weekly, latest }: KPIProps) {
   const data: ChatItem[] = await generateActionInsight(weekly, latest);
-  console.log("action Insights", data)
+  // console.log("action Insights", data)
 
   return (
     <div className="col-span-12 rounded-[10px] bg-white py-6 shadow-1 dark:bg-gray-dark dark:shadow-card xl:col-span-4">

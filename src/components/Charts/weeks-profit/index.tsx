@@ -17,10 +17,17 @@ const SENSOR_LABELS = {
   pm2_5: "PM2.5",
 } as const;
 
+const availableKeys = ["solP","batP","iaq_0","co2_0","pm2_5"]
+
 export async function WeeksProfit({ className, timeFrame, inputData = {} }: Props) {
   // Normalize: convert Partial → full Record with empty arrays for missing keys
+  
+  const filteredData = Object.fromEntries(
+    Object.entries(inputData).filter(([key]) => availableKeys.includes(key as any))
+  );
+  
   const data = Object.fromEntries(
-    Object.entries(inputData).map(([key, values]) => [key, values ?? []])
+    Object.entries(filteredData).map(([key, values]) => [key, values ?? []])
   ) as Record<string, { x: string; y: number }[]>;
 
   // Optional: only show sensors that actually have data
@@ -29,11 +36,11 @@ export async function WeeksProfit({ className, timeFrame, inputData = {} }: Prop
   return (
     <div
       className={cn(
-        "rounded-[10px] bg-white px-7.5 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
+        "rounded-[10px] bg-white px-1 pt-7.5 shadow-1 dark:bg-gray-dark dark:shadow-card",
         className
       )}
     >
-      <h2 className="mb-6 text-body-2xlg font-bold text-dark dark:text-white">
+      <h2 className="mb-6 text-center text-body-2xlg font-bold text-dark dark:text-white">
         Weekly Averages {timeFrame ? `– ${timeFrame}` : ""}
       </h2>
 

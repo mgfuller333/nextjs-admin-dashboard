@@ -2,9 +2,11 @@
 "use client";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSensorStore } from "@/services/store";
+import { ALLOWED_KEYS } from "@/types/sensor";
 import type { ApexOptions } from "apexcharts";
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -12,12 +14,31 @@ type PropsType = {
   data: Record<string, { x: string | number; y: number }[]>;
 };
 
-export function SensorTimeChart({ data }: PropsType) {
+type SensorKey = typeof ALLOWED_KEYS[number];
+type SensorPoint = { x: string; y: number }; // x: ISO ts or label (e.g., 'Jan'), y: value or avg/RMS
+type RawData = { [K in SensorKey]?: SensorPoint[] };
+type MonthlyAggregates = { [K in SensorKey]?: SensorPoint[] }; 
+
+
+export function SensorTimeChart() {
   const isMobile = useIsMobile();
 
-  
 
-  const series = Object.entries(data).map(([name, points]) => ({
+  
+  const monthlyAggregates = useSensorStore((state) => state.monthlyAggregates);
+   
+  useEffect(() => {
+    // Init flatpickr
+ 
+
+  console.log("MonthlyAggregates",monthlyAggregates)
+   console.log("chartData",monthlyAggregates)
+
+  
+  }, [monthlyAggregates]);
+
+
+  const series = Object.entries(monthlyAggregates).map(([name, points]) => ({
     name,
     data: points,
   }));

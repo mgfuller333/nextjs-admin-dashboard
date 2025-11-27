@@ -89,7 +89,7 @@ export function WeeksProfitChart({ data, labels = DEFAULT_LABELS }: Props) {
   }];
 
   return (
-    <div className="px-6">
+    <div className="px-2">
       <Chart
         options={options}
         series={series}

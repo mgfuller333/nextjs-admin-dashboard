@@ -104,10 +104,6 @@ export async function getRawData(
   const validatedKeys = validateKeys(inputkeys);
   if (validatedKeys.length === 0) return {};
 
-  // Fetch
-  //console.log('Fetching raw data');
-  const params = new URLSearchParams();
-  validatedKeys.forEach(key => params.append('keys', key));
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/rawData`, {
   method: 'POST',
@@ -118,6 +114,8 @@ export async function getRawData(
 //  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/weeklyData?${params.toString()}`);
   if (!res.ok) throw new Error(`API error: ${res.statusText}`);
   const payload = await res.json();
+
+  console.log("payload",payload.loc)
 
 
 

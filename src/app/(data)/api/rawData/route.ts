@@ -98,6 +98,8 @@ export async function POST(req: NextRequest) {
       params: { start: startISO, end: endISO },
     });
 
+    console.log("rows",rows)
+
     // Transform into chart-friendly format
     const result: Record<string, { x: string; y: number }[]> = {};
     keys.forEach(key => (result[key] = []));

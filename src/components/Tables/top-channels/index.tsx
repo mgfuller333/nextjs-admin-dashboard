@@ -19,6 +19,8 @@ export async function TopChannels({
 }) {
   const data = await getTopChannels(dailyReadings);
 
+  console.log("dailyReadings",dailyReadings)
+
   type Location = {
     device: string;
     lat: number;
@@ -28,8 +30,8 @@ export async function TopChannels({
   const testLocations: Location[] = [
     {
       device: "Omnius 1",
-      lat: 25.7215,
-      lng: -80.2684,
+      lat: 25.7493,
+      lng: -80.3316,
     },
   ];
 

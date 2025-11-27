@@ -58,6 +58,7 @@ interface SensorStore {
   clearAllRawData: () => void;
 
   // New: Monthly aggregates
+  setMonthlyAggregates: (data: MonthlyAggregates) => void;
   updateMonthlyAggregates: (key: SensorKey, data: SensorPoint[]) => void;
   clearMonthlyAggregates: (key: SensorKey) => void;
   clearAllMonthlyAggregates: () => void;
@@ -85,7 +86,11 @@ export const useSensorStore = create<SensorStore>((set) => ({
   clearAllRawData: () => set({ rawData: initialRawData }),
 
   // Monthly actions
-  updateMonthlyAggregates: (key, data) => set((state) => ({ monthlyAggregates: { ...state.monthlyAggregates, [key]: data } })),
+ setMonthlyAggregates: (data) =>
+    set({
+      monthlyAggregates: data, // Full replace — exactly what you want!
+    }),
+  updateMonthlyAggregates: (key: SensorKey, data: SensorPoint[]) => set((state) => ({ monthlyAggregates: { ...state.monthlyAggregates, [key]: data } })),
   clearMonthlyAggregates: (key) => set((state) => ({ monthlyAggregates: { ...state.monthlyAggregates, [key]: [] } })),
   clearAllMonthlyAggregates: () => set({ monthlyAggregates: initialMonthly }),
 

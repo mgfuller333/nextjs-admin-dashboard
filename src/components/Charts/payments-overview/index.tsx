@@ -1,4 +1,5 @@
 // components/Charts/payments-overview/index.tsx
+
 import { SensorTimeChart } from "./chart";
 import { SensorPicker } from "@/components/period-picker";
 import { cn } from "@/lib/utils";
@@ -17,24 +18,13 @@ export default async function PaymentsOverview({
   searchParams = {},
   data: rawData,
 }: Props) {
-  // Normalize: ensure every sensor has an array (never undefined)
-  const sensorData = Object.fromEntries(
+
+ 
+   // Normalize: ensure every sensor has an array (never undefined)
+  const rawSensorData = Object.fromEntries(
     Object.entries(rawData).map(([key, values]) => [key, values ?? []])
   ) as Record<string, { x: string; y: number }[]>;
 
-  // Optional: filter by URL ?sensors=... (fallback to defaults)
-  const selectedSensors = searchParams.sensors
-    ? Array.isArray(searchParams.sensors)
-      ? searchParams.sensors
-      : [searchParams.sensors]
-    : ['solP', 'batP']; // your actual keys
-
-  // Filter data to only selected sensors (optional — remove if you want all)
-  const filteredData = Object.fromEntries(
-    Object.entries(sensorData).filter(([key]) => selectedSensors.includes(key))
-  );
-
-  const finalData = Object.keys(filteredData).length > 0 ? filteredData : sensorData;
 
   return (
     <div
@@ -49,19 +39,19 @@ export default async function PaymentsOverview({
         </h2>
 
         <SensorPicker
-          sectionKey="sensors"
           defaultValue={['solP', 'batP']}
+          intialData={rawSensorData}
         />
       </div>
 
       {/* Chart */}
       <div className="mt-6">
-        <SensorTimeChart data={finalData} />
+        <SensorTimeChart/>
       </div>
 
       {/* Stats: highest value per sensor */}
-      <dl className="mt-6 flex flex-wrap justify-center gap-x-8 gap-y-6 overflow-x-auto pb-3 text-center">
-        {Object.entries(finalData).map(([key, values]) => {
+      {/* <dl className="mt-6 flex flex-wrap justify-center gap-x-8 gap-y-6 overflow-x-auto pb-3 text-center">
+        {Object.entries(filteredSensorData).map(([key, values]) => {
           if (values.length === 0) {
             return (
               <div key={key} className="flex flex-col items-center px-2">
@@ -75,7 +65,7 @@ export default async function PaymentsOverview({
             point.y > max.y ? point : max
           );
 
-          const sensorCount = Object.keys(finalData).length;
+          const sensorCount = Object.keys(filteredSensorData).length;
           const valueSize =
             sensorCount <= 3 ? "text-2xl" :
             sensorCount <= 5 ? "text-xl" :
@@ -92,7 +82,7 @@ export default async function PaymentsOverview({
             </div>
           );
         })}
-      </dl>
+      </dl> */}
     </div>
   );
 }
