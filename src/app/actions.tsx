@@ -131,7 +131,7 @@ device / bID	Device identifier
       providerOptions: {
         xai: {
           searchParameters: {
-            mode: 'auto',
+            mode: 'off',
             returnCitations: true,
             maxSearchResults: 5,
             sources: [{ type: 'web' }, { type: 'news', country: 'US' }, { type: 'x' }],
@@ -203,7 +203,7 @@ export async function dataNarrative(dailyReadings: any): Promise<string> {
       providerOptions: {
         xai: {
           searchParameters: {
-            mode: 'auto', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
+            mode: 'off', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
             returnCitations: true,
             maxSearchResults: 5,
             sources: [
