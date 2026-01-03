@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
       params: {
         start: startISO,
         end: endISO,
-        limit: Math.min(limit, 10000), // safety cap
+        limit: Math.min(limit, 1000), // safety cap
       },
     });
 
