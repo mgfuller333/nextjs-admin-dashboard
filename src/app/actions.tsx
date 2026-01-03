@@ -38,100 +38,100 @@ export async function continueTextConversation(messages: any[]) {
       inputSchema: z.object({
     query: z.string(last_message),
 
-  }),
-  execute: async ({ query }) => {
-    const collectionId = "collection_4596033a-4422-4a49-b7ba-c24e3eda17c1";
+            }),
+            execute: async ({ query }) => {
+              const collectionId = "collection_4596033a-4422-4a49-b7ba-c24e3eda17c1";
 
-    try {
-      const response = await fetch('https://api.x.ai/v1/documents/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          query,
-          source: { collection_ids: [collectionId] },
-          max_results:6,
-          chunk_size: 1024,
-        }),
-      });
+              try {
+                const response = await fetch('https://api.x.ai/v1/documents/search', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    query,
+                    source: { collection_ids: [collectionId] },
+                    max_results:6,
+                    chunk_size: 1024,
+                  }),
+                });
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        return `Error: Search failed — ${err.message || response.status}`;
-      }
+                if (!response.ok) {
+                  const err = await response.json().catch(() => ({}));
+                  return `Error: Search failed — ${err.message || response.status}`;
+                }
 
-      const data = await response.json();
+                const data = await response.json();
 
-      if (!data.matches?.length) {
-        return "No relevant documents found in the collection.";
-      }
+                if (!data.matches?.length) {
+                  return "No relevant documents found in the collection.";
+                }
 
-      // THIS IS THE KEY: Return clean, readable text
-      const context = data.matches
-        .map((match: any, i: number) => 
-          `--- Reference ${i + 1} (Score: ${match.score.toFixed(3)}) ---\n${match.chunk_content.trim()}`
-        )
-        .join('\n\n');
+                // THIS IS THE KEY: Return clean, readable text
+                const context = data.matches
+                  .map((match: any, i: number) => 
+                    `--- Reference ${i + 1} (Score: ${match.score.toFixed(3)}) ---\n${match.chunk_content.trim()}`
+                  )
+                  .join('\n\n');
 
-        // console.log("context",context)
-        // console.log("last_message",last_message)
-        // console.log("last_message",conversation)
- 
-
-
-       const { text } = await generateText({
-       model: xai_keyed('grok-4-fast-reasoning'),
-      
-        prompt: `${last_message}. Respond as a useful human assistant and concisely under 48 words. Dont include word count in response. 
-
-               Please note that the key in the sensor data are abreviated for actual data
-
-       iaq_n	Indoor Air Quality index (0-7 for each BME688 sensor)
-iaqAcc_n	IAQ accuracy (0-3) for sensor n
-co2_n	Estimated CO₂ (ppm) - sensor n
-bvoc_n	Breath VOC equivalent (ppm) - sensor n
-gasR_n	Gas resistance (Ω) - sensor n
-temp_n	Temperature (°C) - sensor n
-hum_n	Relative humidity (%) - sensor n
-pres_n	Atmospheric pressure (hPa) - sensor n
-pm1	Particulate Matter ≤1.0 µm (µg/m³)
-pm2_5	Particulate Matter ≤2.5 µm (µg/m³)
-pm10	Particulate Matter ≤10 µm (µg/m³)
-batV	Battery voltage (V)
-batP	Battery percentage (%)
-batC	Battery charging current (mA)
-solV / solP	Solar panel voltage and power
-loc	Latitude/Longitude (from GNSS)
-alt	Altitude (m)
-satCnt	Number of satellites in fix
-ts	Timestamp of reading
-device / bID	Device identifier
-        
-
-        Please use this as reference information on the previous conversation that also includes sensor data ${conversation}
-        Please use this as reference information for city planning documentation: ${context}
-        `,
-      });
-
-        // console.log("text",text)
-
-      return text; // ← Plain string! Grok loves this
+                  // console.log("context",context)
+                  // console.log("last_message",last_message)
+                  // console.log("last_message",conversation)
+          
 
 
-       } catch (error: any) {
-         return `Error: Failed to search documents — ${error.message}`;
-      }
-  }
-})
+                const { text } = await generateText({
+                model: xai_keyed('grok-4-fast-reasoning'),
+                
+                  prompt: `${last_message}. Respond as a useful human assistant and concisely under 48 words. Dont include word count in response. 
+
+                        Please note that the key in the sensor data are abreviated for actual data
+
+                iaq_n	Indoor Air Quality index (0-7 for each BME688 sensor)
+          iaqAcc_n	IAQ accuracy (0-3) for sensor n
+          co2_n	Estimated CO₂ (ppm) - sensor n
+          bvoc_n	Breath VOC equivalent (ppm) - sensor n
+          gasR_n	Gas resistance (Ω) - sensor n
+          temp_n	Temperature (°C) - sensor n
+          hum_n	Relative humidity (%) - sensor n
+          pres_n	Atmospheric pressure (hPa) - sensor n
+          pm1	Particulate Matter ≤1.0 µm (µg/m³)
+          pm2_5	Particulate Matter ≤2.5 µm (µg/m³)
+          pm10	Particulate Matter ≤10 µm (µg/m³)
+          batV	Battery voltage (V)
+          batP	Battery percentage (%)
+          batC	Battery charging current (mA)
+          solV / solP	Solar panel voltage and power
+          loc	Latitude/Longitude (from GNSS)
+          alt	Altitude (m)
+          satCnt	Number of satellites in fix
+          ts	Timestamp of reading
+          device / bID	Device identifier
+                  
+
+                  Please use this as reference information on the previous conversation that also includes sensor data ${conversation}
+                  Please use this as reference information for city planning documentation: ${context}
+                  `,
+                });
+
+                  // console.log("text",text)
+
+                return text; // ← Plain string! Grok loves this
+
+
+                } catch (error: any) {
+                  return `Error: Failed to search documents — ${error.message}`;
+                }
+            }
+          })
       },
       toolChoice: 'auto',
       stopWhen: stepCountIs(5),
       providerOptions: {
         xai: {
           searchParameters: {
-            mode: 'off',
+            mode: 'auto',
             returnCitations: true,
             maxSearchResults: 5,
             sources: [{ type: 'web' }, { type: 'news', country: 'US' }, { type: 'x' }],
