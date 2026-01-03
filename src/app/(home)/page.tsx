@@ -11,7 +11,7 @@ import type { SensorKey, SensorPoint } from '@/types/sensor';
 import ChatbotButton from '@/components/chatbot';
 import { WeeksProfit } from '@/components/Charts/weeks-profit';
 
-const initialKeys: SensorKey[] = ["iaq_0", "iaqAcc_0", "co2_0", "bvoc_0", "pres_0", "gasR_0", "temp_0", "hum_0", "com_gas0", "batV", "batSV", "batC", "batP", "solV", "solSV", "solC", "solP", "pm10", "pm2_5", "pm1"];
+const initialKeys: SensorKey[] = ["iaq_0", "iaqAcc_0", "co2_0", "bvoc_0", "pres_0", "gasR_0", "temp_0", "hum_0", "com_gas0", "batV", "batSV", "batC", "batP", "solV", "solSV", "solC", "solP", "pm10", "pm2_5", "pm1","loc"];
 type Props = {
   searchParams: Promise<{
     selected_time_frame?: string;
@@ -35,10 +35,10 @@ export default async function Home({ searchParams }: Props) {
     // Direct, reactive access — no local state needed! 
 
   
-  console.log('Weekly Averages:', rawPayload);
-  console.log('Weekly Averages:', weeklyAverages);
+  //console.log('Weekly Averages:', rawPayload);
+  //console.log('Weekly Averages:', weeklyAverages);
   console.log('Latest Readings:', latestReadings);
-  console.log('Monthly Readings:', monthlyReadings);
+  //console.log('Monthly Readings:', monthlyReadings);
 
 
  const overviewData = {

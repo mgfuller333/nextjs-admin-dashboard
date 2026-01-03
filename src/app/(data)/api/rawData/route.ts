@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       FROM \`${process.env.GOOGLE_CLOUD_PROJECT_ID}.${DATASET_ID}.${TABLE_ID}\`
       WHERE ts >= @start AND ts <= @end
       ORDER BY ts DESC
-      LIMIT 5000
+      LIMIT 500
     `;
 
     const [rows] = await bigquery.query({
@@ -98,7 +98,21 @@ export async function POST(req: NextRequest) {
       params: { start: startISO, end: endISO },
     });
 
-    console.log("rows",rows)
+    const latestReading = rows.slice(0, 80);
+
+    console.log("rows",latestReading)
+
+    const recentLocations = latestReading.map((x) => x.loc);
+
+   
+
+       console.log("locations",recentLocations)
+
+     const filteredLocations = recentLocations.filter(
+  (geo) => geo.value !== 'POINT(0 0)'
+);
+   console.log("filteredLocations",filteredLocations)
+
 
     // Transform into chart-friendly format
     const result: Record<string, { x: string; y: number }[]> = {};

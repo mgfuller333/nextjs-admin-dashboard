@@ -40,7 +40,7 @@ interface RequestBody {
 export async function POST(req: NextRequest) {
   try {
     const body: RequestBody = await req.json();
-    const { keys: requestedKeys, start, end, limit = 100 } = body;
+    const { keys: requestedKeys, start, end, limit = 500 } = body;
 
     // Validate keys
     if (!Array.isArray(requestedKeys) || requestedKeys.length === 0) {
