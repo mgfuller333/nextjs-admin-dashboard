@@ -214,7 +214,7 @@ export async function dataNarrative(dailyReadings: any): Promise<string> {
       //     },
       //   },
       // },
-      prompt: `Provide a concise 5-word summary of the following data: ${JSON.stringify(dailyReadings)}`,
+      prompt: `Provide a concise 5-word summary of the following data: ${JSON.stringify(dailyReadings)}. Please do not use markdown formatting`,
     });
 
     // console.log("Data Narrative Text:", text);
