@@ -128,16 +128,16 @@ export async function continueTextConversation(messages: any[]) {
       },
       toolChoice: 'auto',
       stopWhen: stepCountIs(5),
-      providerOptions: {
-        xai: {
-          searchParameters: {
-            mode: 'auto',
-            returnCitations: true,
-            maxSearchResults: 5,
-            sources: [{ type: 'web' }, { type: 'news', country: 'US' }, { type: 'x' }],
-          },
-        },
-      },
+      // providerOptions: {
+      //   xai: {
+      //     searchParameters: {
+      //       mode: 'auto',
+      //       returnCitations: true,
+      //       maxSearchResults: 5,
+      //       sources: [{ type: 'web' }, { type: 'news', country: 'US' }, { type: 'x' }],
+      //     },
+      //   },
+      // },
     });
 
     const { text, toolResults } = result;
@@ -200,20 +200,20 @@ export async function dataNarrative(dailyReadings: any): Promise<string> {
   try {
     const { text } = await generateText({
       model: xai_keyed('grok-4.20-0309-non-reasoning'),
-      providerOptions: {
-        xai: {
-          searchParameters: {
-            mode: 'off', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
-            returnCitations: true,
-            maxSearchResults: 5,
-            sources: [
-              { type: 'web' },
-              { type: 'news', country: 'US' },
-              { type: 'x' },
-            ],
-          },
-        },
-      },
+      // providerOptions: {
+      //   xai: {
+      //     searchParameters: {
+      //       mode: 'off', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
+      //       returnCitations: true,
+      //       maxSearchResults: 5,
+      //       sources: [
+      //         { type: 'web' },
+      //         { type: 'news', country: 'US' },
+      //         { type: 'x' },
+      //       ],
+      //     },
+      //   },
+      // },
       prompt: `Provide a concise 5-word summary of the following data: ${JSON.stringify(dailyReadings)}`,
     });
 
