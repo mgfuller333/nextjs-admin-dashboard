@@ -42,7 +42,8 @@ const formatTimeAgo = (timeStr: string): string => {
   const match = timeStr.match(/^(\d+)([smhd])$/);
   if (!match) return timeStr;
 
-  const value = parseInt(match[1], 10);
+  //const value = parseInt(match[1], 10);
+  const value = 0.5;
   //const unit = match[2];
   const unit = "s";
 
