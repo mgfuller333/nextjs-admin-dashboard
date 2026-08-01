@@ -221,7 +221,7 @@ export async function dataNarrative(dailyReadings: any): Promise<string> {
     return text || "No summary generated.";
   } catch (error) {
     // console.error("Error generating data narrative:", error);
-    return "Online In Safe Air Conditions";
+    return "Online in safe air conditions";
   }
 }
 
