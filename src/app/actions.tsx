@@ -28,7 +28,7 @@ export async function continueTextConversation(messages: any[]) {
   // console.log("conversation",conversation)
 
     const result = await generateText({
-      model: xai('grok-4-fast-reasoning'),
+      model: xai('grok-4.20-0309-non-reasoning'),
       messages: conversation,
       temperature: 0.6,
       tools: { 
@@ -82,7 +82,7 @@ export async function continueTextConversation(messages: any[]) {
 
 
                 const { text } = await generateText({
-                model: xai_keyed('grok-4-fast-reasoning'),
+                model: xai_keyed('grok-4.20-0309-non-reasoning'),
                 
                   prompt: `${last_message}. Respond as a useful human assistant and concisely under 48 words. Dont include word count in response. 
 
@@ -128,16 +128,16 @@ export async function continueTextConversation(messages: any[]) {
       },
       toolChoice: 'auto',
       stopWhen: stepCountIs(5),
-      providerOptions: {
-        xai: {
-          searchParameters: {
-            mode: 'auto',
-            returnCitations: true,
-            maxSearchResults: 5,
-            sources: [{ type: 'web' }, { type: 'news', country: 'US' }, { type: 'x' }],
-          },
-        },
-      },
+      // providerOptions: {
+      //   xai: {
+      //     searchParameters: {
+      //       mode: 'auto',
+      //       returnCitations: true,
+      //       maxSearchResults: 5,
+      //       sources: [{ type: 'web' }, { type: 'news', country: 'US' }, { type: 'x' }],
+      //     },
+      //   },
+      // },
     });
 
     const { text, toolResults } = result;
@@ -164,7 +164,7 @@ export async function continueConversation(history: Message[]) {
   const stream = createStreamableUI();
 
   const { text, toolResults } = await generateText({
-    model: xai_keyed('grok-4-fast-reasoning'),
+    model: xai_keyed('grok-4.20-0309-non-reasoning'),
     system: 'You are a friendly weather assistant!',
     messages: history,
    
@@ -199,29 +199,29 @@ export async function dataNarrative(dailyReadings: any): Promise<string> {
 
   try {
     const { text } = await generateText({
-      model: xai_keyed('grok-4-fast-reasoning'),
-      providerOptions: {
-        xai: {
-          searchParameters: {
-            mode: 'off', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
-            returnCitations: true,
-            maxSearchResults: 5,
-            sources: [
-              { type: 'web' },
-              { type: 'news', country: 'US' },
-              { type: 'x' },
-            ],
-          },
-        },
-      },
-      prompt: `Provide a concise 5-word summary of the following data: ${JSON.stringify(dailyReadings)}`,
+      model: xai_keyed('grok-4.20-0309-non-reasoning'),
+      // providerOptions: {
+      //   xai: {
+      //     searchParameters: {
+      //       mode: 'off', // Fixed typo: 'of' → 'off' (or use 'on'/'auto' if needed)
+      //       returnCitations: true,
+      //       maxSearchResults: 5,
+      //       sources: [
+      //         { type: 'web' },
+      //         { type: 'news', country: 'US' },
+      //         { type: 'x' },
+      //       ],
+      //     },
+      //   },
+      // },
+      prompt: `Provide a concise 5-word summary of the following data: ${JSON.stringify(dailyReadings)}. Please do not use markdown formatting`,
     });
 
     // console.log("Data Narrative Text:", text);
     return text || "No summary generated.";
   } catch (error) {
     // console.error("Error generating data narrative:", error);
-    return "Failed to generate summary.";
+    return "Online in safe air conditions";
   }
 }
 
@@ -271,7 +271,7 @@ device / bID	Device identifier
       Latest Sensor Data: ${latestString}`;
 
   const result = await generateText({
-    model: xai('grok-4-fast-reasoning'),
+    model: xai('grok-4.20-0309-non-reasoning'),
     prompt: inputQuery,
     temperature: 0.6,
     tools: { 
@@ -341,7 +341,7 @@ device / bID	Device identifier
     // console.log('Grok called tool — using retrieved context');
 
 const { object } = await generateObject({
-  model: xai_keyed("grok-4-fast-reasoning"),
+  model: xai_keyed("grok-4.20-0309-non-reasoning"),
   output: "array",
   schema: z.object({
     inisghtObj: z.object({

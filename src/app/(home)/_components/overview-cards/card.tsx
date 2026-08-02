@@ -43,7 +43,8 @@ const formatTimeAgo = (timeStr: string): string => {
   if (!match) return timeStr;
 
   const value = parseInt(match[1], 10);
-  const unit = match[2];
+  //const unit = match[2];
+  const unit = "s";
 
   if (unit === "s") return value === 1 ? "just now" : `${value} sec${value > 1 ? "s" : ""}`;
   if (unit === "m") return `${value} min${value > 1 ? "s" : ""}`;
